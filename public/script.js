@@ -41,8 +41,8 @@ form?.addEventListener('submit', async event => {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Request failed');
     statusEl.textContent = result.emailConfigured
-      ? 'Done — your request has been sent. We’ll be in touch shortly.'
-      : 'Done — you’re on the early access list. Email automation is ready for production keys.';
+      ? 'Done — your request has been sent. The RESET team will be in touch shortly.'
+      : 'Done — you’re on the early access list. The RESET team will be in touch shortly.';
     form.reset();
   } catch (error) {
     statusEl.textContent = 'Sorry, that did not send. Email hello@resetmcr.com or try again in a minute.';
