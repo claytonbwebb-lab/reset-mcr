@@ -35,13 +35,18 @@
 <body>
   <a class="skip" href="#main">Skip to content</a>
   <header class="site-header" data-header>
-    <a class="brand" href="#top" aria-label="RESET MCR home"><img class="brand-r" src="/assets/reset-mcr-logo.png" alt="" aria-hidden="true" /><img class="brand-wordmark" src="/assets/reset-mcr-wordmark-white.png" alt="RESET MCR" /><span class="brand-text" aria-hidden="true"><strong>RESET</strong><small>MCR</small></span></a>
+    <!-- Steve: logo — keeping black-wordmark (reset-mcr-wordmark-cropped.jpg); remove white-wordmark reference -->
+    <a class="brand" href="#top" aria-label="RESET MCR home">
+      <img class="brand-r" src="/assets/reset-mcr-logo.png" alt="" aria-hidden="true" />
+      <img class="brand-wordmark" src="/assets/reset-mcr-wordmark-cropped.jpg" alt="RESET MCR" />
+      <span class="brand-text" aria-hidden="true"><strong>RESET</strong><small>MCR</small></span>
+    </a>
     <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false" data-nav-toggle><span></span><span></span></button>
     <nav class="nav" data-nav>
       <a href="#services">Services</a>
-      <a href="#recovery">Recovery</a>
       <a href="#barber">Barber</a>
-      <a href="#membership">Offers</a>
+      <a href="#recovery">Recovery</a>
+      <a href="#membership">Pricing</a>
       <a href="/blog/">Blog</a>
       <a href="#book" class="nav-cta">Book now</a>
     </nav>
@@ -52,19 +57,28 @@
       <div class="hero-bg" aria-hidden="true"><span></span><span></span><span></span></div>
       <div class="hero-content">
         <img class="hero-mark" src="/assets/reset-mcr-hero-logo.jpg" alt="RESET MCR" />
-        <p class="eyebrow">Stalybridge · Greater Manchester · Opening soon</p>
-        <h1>Recover.<br>Reset.<br><em>Perform.</em></h1>
+        <p class="eyebrow">Stalybridge · Greater Manchester · Now open</p>
+        <!-- NOTE: Danny's suggested headlines — Steve please pick one from the options below: -->
+        <!-- OPTION A: LOOK FRESH. FEEL FRESH.  (currently set) -->
+        <!-- OPTION B: STYLE. RECOVER. RESET -->
+        <!-- OPTION C: LOOK SHARP. PERFORM BETTER. -->
+        <!-- OPTION D: LOOK SHARP. RECOVER STRONG. -->
+        <!-- OPTION E: CUT FRESH. RECOVER HARD. -->
+        <!-- OPTION F: GROOMED. RECOVERED. RESET. -->
+        <!-- OPTION G: LOOK SHARP. STAY SHARP. -->
+        <!-- OPTION H: GROOM. RECOVER. RESET. -->
+        <h1>LOOK FRESH.<br>FEEL FRESH.</h1>
         <p class="lead">A premium barbershop and recovery centre under the railway arches: sharp cuts, sauna, steam, cold plunge, hot tub, red light therapy and compression recovery.</p>
         <div class="hero-actions">
-          <a class="btn btn-primary" href="#book">Request early access</a>
+          <a class="btn btn-primary" href="#book">Book a cut</a>
           <a class="btn btn-ghost" href="#services">Explore services</a>
         </div>
       </div>
-      <aside class="hero-venue" aria-label="RESET MCR venue concept">
+      <aside class="hero-venue" aria-label="RESET MCR venue">
         <img src="/assets/barbershop-interior-concept.jpg" alt="Premium barbershop and recovery venue interior concept" />
         <div class="venue-overlay">
-          <span>Railway arch concept</span>
-          <strong>Barbering + recovery in one premium venue</strong>
+          <span>Under the railway arches</span>
+          <strong>Premium barbering + recovery coming soon</strong>
         </div>
       </aside>
     </section>
@@ -76,9 +90,9 @@
     <section class="section intro concept-visual">
       <div>
         <p class="eyebrow">The concept</p>
-        <h2>A RECOVERY CLUB FOR ALL, WITH A DEDICATED BARBERSHOP</h2>
+        <h2>THE RECOVERY CLUB, COMING SOON</h2>
       </div>
-      <p>RESET MCR is designed for athletes, gym-goers, busy professionals and anyone serious about daily wellbeing. The recovery facilities are for both men and women, while the barbershop remains a focused men’s grooming offer. Book a cut, stack a recovery circuit, or build a routine around heat, cold, breathwork and mobility.</p>
+      <p>RESET MCR is designed for athletes, gym-goers, busy professionals and anyone serious about daily wellbeing. The recovery facilities are for both men and women, while the barbershop remains a focused men's grooming offer. Book a cut, stack a recovery circuit, or build a routine around heat, cold, breathwork and mobility.</p>
     </section>
 
     <section class="section services" id="services">
@@ -96,10 +110,41 @@
       </div>
     </section>
 
+    <!-- BARBER SECTION — now first, as barbershop is opening 12 Sep -->
+    <section class="section split barber" id="barber">
+      <div>
+        <p class="eyebrow">Barbershop</p>
+        <h2>Fade culture meets recovery culture.</h2>
+        <p>A sharp, modern barbershop for men who want a clean cut, a fresh fade or a proper reset before or after training. Expect precise barbering, beard work, premium finishes and an atmosphere that feels relaxed, confident and considered.</p>
+        <div class="mini-cards">
+          <span>Skin fades</span><span>Beards</span><span>Classic cuts</span><span>Cut + recovery bundles</span>
+        </div>
+        <!-- Barber price list — NOTE: Steve to provide actual prices; placeholder below -->
+        <div class="price-list" style="margin-top:32px;">
+          <h3 style="font-family:Oswald,sans-serif;text-transform:uppercase;font-size:22px;letter-spacing:.05em;margin:0 0 16px;">Barber price list</h3>
+          <table style="width:100%;border-collapse:collapse;color:#d7d0c7;font-size:15px;">
+            <tr style="border-bottom:1px solid rgba(255,255,255,.12);"><td style="padding:10px 0;">Haircut</td><td style="text-align:right;font-weight:700;">£22</td><td style="text-align:right;color:#b6ada0;font-size:13px;">30 mins</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.12);"><td style="padding:10px 0;">Beard trim</td><td style="text-align:right;font-weight:700;">£12</td><td style="text-align:right;color:#b6ada0;font-size:13px;">20 mins</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.12);"><td style="padding:10px 0;">Hair &amp; Beard</td><td style="text-align:right;font-weight:700;">£28</td><td style="text-align:right;color:#b6ada0;font-size:13px;">40 mins</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.12);"><td style="padding:10px 0;">Kids</td><td style="text-align:right;font-weight:700;">£18</td><td style="text-align:right;color:#b6ada0;font-size:13px;">20 mins</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.12);"><td style="padding:10px 0;">Cut-throat Shave</td><td style="text-align:right;font-weight:700;">£24</td><td style="text-align:right;color:#b6ada0;font-size:13px;">30 mins</td></tr>
+            <tr style="border-bottom:1px solid rgba(255,255,255,.12);"><td style="padding:10px 0;">Haircut &amp; Cut-throat</td><td style="text-align:right;font-weight:700;">£42</td><td style="text-align:right;color:#b6ada0;font-size:13px;">60 mins</td></tr>
+          </table>
+          <p style="margin-top:12px;color:#b6ada0;font-size:13px;">All cuts include a complimentary drink and hot towels.</p>
+        </div>
+      </div>
+      <!-- NOTE: Replace placeholder with actual barber work images (skin fade, beard trim, adult & child cuts) -->
+      <figure class="barber-photo-card">
+        <img src="/assets/photo-barbershop.jpg" alt="Modern barbershop interior with barber chairs and premium finishing" loading="lazy" />
+        <figcaption>Fresh cuts, sharp fades and expert beard work — book your slot today.</figcaption>
+      </figure>
+    </section>
+
+    <!-- RECOVERY SECTION — now after barber, as barbershop opens first -->
     <section class="section split" id="recovery">
       <div class="visual-panel recovery-panel" aria-label="Recovery centre visualisation">
         <div class="glow red"></div><div class="glow amber"></div><div class="glow blue"></div>
-        <span class="recovery-red"><img class="recovery-photo" src="/assets/photo-service-06-red-light.jpg" alt="" aria-hidden="true" loading="lazy" /><b>Red Light</b><small>Energy · skin · recovery</small></span><span class="recovery-sauna"><img class="recovery-photo" src="/assets/photo-service-02-sauna-heat.jpg" alt="" aria-hidden="true" loading="lazy" /><b>Infrared Sauna</b><small>Heat · circulation · calm</small></span><span class="recovery-cold"><img class="recovery-photo" src="/assets/photo-service-03-cold-plunge.jpg" alt="" aria-hidden="true" loading="lazy" /><b>Cold Plunge</b><small>Contrast · resilience · reset</small></span><span class="recovery-steam"><img class="recovery-photo" src="/assets/photo-service-04-steam-hot-tub.jpg" alt="" aria-hidden="true" loading="lazy" /><b>Steam & Hot Tub</b><small>Relax · decompress · recover</small></span>
+        <span class="recovery-red"><img class="recovery-photo" src="/assets/photo-service-06-red-light.jpg" alt="" aria-hidden="true" loading="lazy" /><b>Red Light</b><small>Energy · skin · recovery</small></span><span class="recovery-sauna"><img class="recovery-photo" src="/assets/photo-service-02-sauna-heat.jpg" alt="" aria-hidden="true" loading="lazy" /><b>Infrared Sauna</b><small>Heat · circulation · calm</small></span><span class="recovery-cold"><img class="recovery-photo" src="/assets/photo-service-03-cold-plunge.jpg" alt="" aria-hidden="true" loading="lazy" /><b>Cold Plunge</b><small>Contrast · resilience · reset</small></span><span class="recovery-steam"><img class="recovery-photo" src="/assets/photo-service-04-steam-hot-tub.jpg" alt="" aria-hidden="true" loading="lazy" /><b>Steam &amp; Hot Tub</b><small>Relax · decompress · recover</small></span>
       </div>
       <div>
         <p class="eyebrow">Recovery centre</p>
@@ -113,38 +158,24 @@
       </div>
     </section>
 
-    <section class="section split barber" id="barber">
-      <div>
-        <p class="eyebrow">Barbershop</p>
-        <h2>Fade culture meets recovery culture.</h2>
-        <p>A sharp, modern barbershop for men who want a clean cut, a fresh fade or a proper reset before or after training. Expect precise barbering, beard work, premium finishes and an atmosphere that feels relaxed, confident and considered.</p>
-        <div class="mini-cards">
-          <span>Skin fades</span><span>Beards</span><span>Classic cuts</span><span>Cut + recovery bundles</span>
-        </div>
-      </div>
-      <figure class="barber-photo-card">
-        <img src="/assets/barbershop-interior-concept.jpg" alt="Modern barbershop interior concept with three barber chairs, large mirror and warm lighting" loading="lazy" />
-        <figcaption>Interior direction: clean lines, warm mirror lighting, premium chair layout and strong shopfront identity.</figcaption>
-      </figure>
-    </section>
-
     <section class="section membership" id="membership">
       <div class="section-head">
-        <p class="eyebrow">Launch offers</p>
-        <h2>Launch Offers</h2>
+        <p class="eyebrow">Pricing</p>
+        <h2>Pricing</h2>
       </div>
       <div class="pricing">
         <article><p>Drop-in</p><h3>Single reset</h3><ul><li>One recovery session</li><li>Ideal for first timers</li><li>Email follow-up to rebook</li></ul><a href="#book">Join waitlist</a></article>
-        <article class="featured"><p>Most popular</p><h3>Cut + recover</h3><ul><li>Barber appointment</li><li>Recovery circuit add-on</li><li>Bundle conversion flow</li></ul><a href="#book">Request launch slot</a></article>
+        <article class="featured"><p>Most popular</p><h3>Cut + recover</h3><ul><li>Barber appointment</li><li>Recovery circuit add-on</li><li>Bundle conversion flow</li></ul><a href="#book">Book a cut</a></article>
         <article><p>Members</p><h3>Weekly reset</h3><ul><li>Recurring recovery access</li><li>Priority launch updates</li><li>Automated renewals ready</li></ul><a href="#book">Get early access</a></article>
       </div>
     </section>
 
+    <!-- NOTE: Local visibility → COME AND FIND US + map background — Steve needs to supply map image -->
     <section class="section local-presence">
       <div>
-        <p class="eyebrow">Local visibility</p>
-        <h2>Built to be found across Stalybridge, Tameside and Manchester.</h2>
-        <p>RESET MCR brings barbering and recovery into one premium local space for Stalybridge, Tameside and Manchester. Whether you are booking a fresh cut, a cold plunge, a sauna session or a regular recovery routine, the aim is simple: help you look sharper, feel better and perform at your best.</p>
+        <p class="eyebrow">Come and find us</p>
+        <h2>Find RESET MCR under the railway arches in Stalybridge.</h2>
+        <p>Whether you are booking a fresh cut, a cold plunge, a sauna session or a regular recovery routine, the aim is simple: help you look sharper, feel better and perform at your best.</p>
       </div>
       <div class="local-grid">
         <span>Barber Stalybridge</span><span>Skin fade Stalybridge</span><span>Recovery centre Manchester</span><span>Cold plunge Manchester</span><span>Sauna Stalybridge</span><span>Sports recovery Tameside</span>
@@ -165,9 +196,9 @@
 
     <section class="section booking" id="book">
       <div class="booking-copy">
-        <p class="eyebrow">Opening soon</p>
-        <h2>Be first in when RESET launches.</h2>
-        <p>Register interest for barber bookings, recovery sessions, launch memberships or founder offers. Tell us what you’re interested in and the RESET team will come back with launch availability and next steps.</p>
+        <p class="eyebrow">Opening 12 September</p>
+        <h2>Book your cut at RESET MCR.</h2>
+        <p>Barbershop opening 12 September. Register your details and we'll be in touch with availability.</p>
       </div>
       <form class="booking-form" data-booking-form>
         <label>Full name <input required name="name" autocomplete="name" placeholder="Your name" /></label>
@@ -176,7 +207,7 @@
         <label>Interested in <select name="interest"><option>Barber appointment</option><option>Recovery session</option><option>Cut + recovery bundle</option><option>Founder membership</option><option>Gift voucher</option></select></label>
         <label>Preferred time <select name="preferred"><option>Weekday daytime</option><option>Weekday evening</option><option>Saturday</option><option>Sunday</option><option>Opening offer updates only</option></select></label>
         <label class="full">Message <textarea name="message" rows="4" placeholder="Tell us what you want to book or ask about"></textarea></label>
-        <button class="btn btn-primary full" type="submit">Request early access</button>
+        <button class="btn btn-primary full" type="submit">Book a cut</button>
         <p class="form-status" role="status" data-form-status></p>
       </form>
     </section>
@@ -186,8 +217,15 @@
     <div class="footer-brand"><img src="/assets/reset-mcr-logo.png" alt="RESET MCR" /><div><strong>RESET MCR</strong><p>Recover. Reset. Perform.</p></div></div>
     <div class="footer-cols">
       <div><h3>Contact</h3><p>Stalybridge, Greater Manchester</p><p><a href="mailto:hello@resetmcr.com">hello@resetmcr.com</a></p><p><a href="tel:+440000000000">Phone coming soon</a></p></div>
-      <div><h3>Explore</h3><p><a href="#services">Services</a></p><p><a href="#membership">Offers</a></p><p><a href="/blog/">Blog</a></p><p><a href="#book">Book now</a></p><p><a href="https://www.instagram.com/reset_recovery/">Instagram</a></p></div>
-      <div><h3>Information</h3><p><a href="#top">About us</a></p><p><a href="#services">FAQs coming soon</a></p><p><a href="#book">Privacy details on request</a></p></div>
+      <div><h3>Explore</h3><p><a href="#services">Services</a></p><p><a href="#barber">Barber</a></p><p><a href="#recovery">Recovery</a></p><p><a href="#membership">Pricing</a></p><p><a href="/blog/">Blog</a></p></div>
+      <div>
+        <h3>Follow us</h3>
+        <div class="social-icons" style="display:flex;gap:14px;margin-top:8px;">
+          <a href="https://www.instagram.com/reset_recovery/" aria-label="Instagram" style="width:38px;height:38px;border:1px solid rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#ddd;font-size:18px;text-decoration:none;">📷</a>
+        </div>
+        <h3 style="margin-top:20px;">Information</h3>
+        <p><a href="#top">About us</a></p><p><a href="#services">FAQs coming soon</a></p><p><a href="#book">Privacy details on request</a></p>
+      </div>
     </div>
   </footer>
 
