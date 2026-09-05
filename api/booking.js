@@ -1,4 +1,4 @@
-const { json, escapeHtml, sendEmail, EMAIL_TO, EMAIL_FROM } = require('./_mail');
+const { json, escapeHtml, sendEmail, EMAIL_TO } = require('./_mail');
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') {
@@ -39,7 +39,6 @@ module.exports = async (req, res) => {
   </div>`;
 
   try {
-    // Send to owner
     await sendEmail({
       to: EMAIL_TO,
       subject: `RESET MCR booking interest — ${safe.name}`,
@@ -47,7 +46,6 @@ module.exports = async (req, res) => {
       html,
     });
 
-    // Auto-reply to submitter
     const autoReplyHtml = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#111;color:#f0ece4;padding:24px;border-radius:4px;border:1px solid #2a2520">
       <h2 style="color:#d4c4a8;font-family:Oswald,sans-serif;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #2a2520;padding-bottom:12px;margin-top:0">We received your request</h2>
       <p style="color:#f0ece4;line-height:1.6">Thanks ${safe.name},</p>
@@ -64,7 +62,7 @@ module.exports = async (req, res) => {
 
     return json(res, 200, { ok: true });
   } catch (err) {
-    console.error('booking error:', err);
-    return json(res, 500, { error: 'Unable to process booking request' });
+    console.error('booking error:', err && err.message);
+    return json(res, 500, { error: err && err.message || 'Unable to process booking request' });
   }
 };
