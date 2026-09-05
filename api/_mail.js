@@ -1,50 +1,29 @@
-const nodemailer = require('nodemailer')
+// ── RESET MCR — Shared mail helpers (Resend API) ───────────────────────────────
+const { json, escapeHtml } = require('./_utils')
 
-// ── Config (set via Vercel environment variables) ─────────────────────────
-const ZOHO_EMAIL    = process.env.ZOHO_EMAIL    || 'info@brightstacklabs.co.uk'
-const ZOHO_PASSWORD = process.env.ZOHO_PASSWORD || ''
-const EMAIL_FROM    = process.env.EMAIL_FROM    || 'RESET MCR <info@brightstacklabs.co.uk>'
-const EMAIL_TO      = process.env.EMAIL_TO      || 'malesy@yahoo.com'
-
-// ── Transporter (created once at cold-start) ────────────────────────────────
-let transporter
-if (ZOHO_PASSWORD) {
-  transporter = nodemailer.createTransport({
-    host: 'smtp.zoho.eu',
-    port: 465,
-    secure: true,
-    auth: {
-      user: ZOHO_EMAIL,
-      pass: ZOHO_PASSWORD,
-    },
-  })
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-function json(res, status, body) {
-  res.statusCode = status
-  res.setHeader('Content-Type', 'application/json')
-  res.end(JSON.stringify(body))
-}
-
-function escapeHtml(value = '') {
-  return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]))
-}
+const RESEND_KEY  = process.env.RESEND_API_KEY  || ''
+const EMAIL_FROM  = process.env.EMAIL_FROM  || 'RESET MCR <onboarding@resend.dev>'
+const EMAIL_TO    = process.env.EMAIL_TO    || 'malesy@yahoo.com'
 
 // ── Email sender ─────────────────────────────────────────────────────────────
 async function sendEmail({ to, subject, html, replyTo }) {
-  if (!transporter) {
-    console.warn('[_mail] SMTP not configured — ZOHO_PASSWORD not set')
+  if (!RESEND_KEY) {
+    console.warn('[_mail] Resend API key not set — RESEND_API_KEY env var missing')
     return { configured: false }
   }
-  try {
-    const info = await transporter.sendMail({ from: EMAIL_FROM, to, subject, html, replyTo })
-    console.info('[_mail] Sent:', info.response)
-    return { configured: true, info }
-  } catch (err) {
-    console.error('[_mail] Send error:', err.message)
-    throw err
+  const res = await fetch('https://api.resend.com/emails', {
+    method:  'POST',
+    headers: { Authorization: `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ from: EMAIL_FROM, to, subject, html, reply_to: replyTo }),
+  })
+  if (!res.ok) {
+    const text = await res.text()
+    console.error('[_mail] Resend error:', res.status, text)
+    throw new Error(`Resend ${res.status}: ${text}`)
   }
+  const data = await res.json()
+  console.info('[_mail] Sent:', data.id)
+  return { configured: true, data }
 }
 
 // ── Shared HTML builder ───────────────────────────────────────────────────────
