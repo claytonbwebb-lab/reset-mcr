@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "buildCommand": "echo 'Static site - no build needed'",
+  "outputDirectory": "public",
   "cleanUrls": true,
   "rewrites": [
     { "source": "/api/lead", "destination": "/api/lead.js" },
