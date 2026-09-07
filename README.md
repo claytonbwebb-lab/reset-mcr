@@ -1,31 +1,57 @@
 # RESET MCR
 
-Premium launch website for RESET MCR — a Stalybridge barbershop and recovery centre.
+Premium barbershop website for Reset MCR — located under the railway arches in Stalybridge.
 
-## Built in
+## Built with
 
-- SEO landing page targeting Stalybridge / Manchester barber and recovery searches
-- Mobile-first booking/waitlist form
-- Vercel serverless API endpoints:
-  - `/api/booking` — booking / launch access requests
-  - `/api/lead` — simple CRM lead capture endpoint
-- Automated email support via Resend when production environment variables are added
-- Local business schema, sitemap, robots.txt and social preview metadata
+- Static HTML/CSS/JS frontend (no framework)
+- Vercel serverless API for booking, availability, diary, attendance
+- Supabase database (PostgreSQL)
+- Resend for transactional email
 
-## Vercel environment variables
+## Setup
 
-Add these in Vercel once the production email/domain is ready:
+### 1. Database setup
 
-```bash
-RESEND_API_KEY=...
-RESET_FROM_EMAIL="RESET MCR <hello@resetmcr.com>"
-RESET_NOTIFICATION_EMAIL="hello@resetmcr.com"
+Run the SQL files in your Supabase project SQL editor:
+
+```
+api/schema.sql   — creates all tables
+api/seed.sql    — seeds services, staff, and availability
 ```
 
-Until `RESEND_API_KEY` is configured, the form still accepts submissions and returns a success state with `emailConfigured:false`, so the site can be previewed safely without sending email.
+### 2. Environment variables
 
-## Suggested next production integrations
+Set these in your Vercel project dashboard:
 
-- Connect the main booking CTA to Fresha, Booksy, Square Appointments or Cal.com once the operator chooses a booking platform.
-- Connect `/api/booking` to HubSpot, Airtable or GoHighLevel if Danny wants a full CRM pipeline rather than email-led capture.
-- Add real photography once the railway arch fit-out is complete.
+| Variable | Value |
+|---|---|
+| `SUPABASE_URL` | `https://suyrbsuuckcvhdvxcvsf.supabase.co` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Your Supabase service role key |
+| `RESEND_API_KEY` | Your Resend API key |
+| `DIARY_PASSWORD` | Password for Jack's diary (e.g. `reset2026`) |
+| `JACK_EMAIL` | Email for booking notifications (e.g. `hello@resetmcr.com`) |
+
+### 3. Deploy
+
+```bash
+npx vercel --prod --yes --project reset-mcr --token YOUR_TOKEN
+```
+
+## Key pages
+
+| Page | Description |
+|---|---|
+| `/` | Main site with booking flow |
+| `/diary.html` | Jack's diary (password protected) |
+
+## API endpoints
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/booking` | POST | Create a booking + send emails |
+| `/api/availability` | GET | Get available slots (query: date, staff_id, service_id) |
+| `/api/diary` | GET | Diary view (query: date, view=daily\|weekly) |
+| `/api/attendance` | POST | Mark attended/no-show/cancelled |
+| `/api/walkin` | POST | Add a walk-in |
+| `/api/admin` | POST | Admin actions (move, block, unblock, timeoff) |

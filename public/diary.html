@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reset MCR | Diary</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#050505;--panel:#0b0b0b;--text:#f7f3ec;--muted:#b6ada0;--line:rgba(255,255,255,.12);--gold:#b89b75;--gold2:#e3c89c;--green:#3ecf5c;--red:#e03030;--amber:#e0a030;--max:1200px}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;line-height:1.55;min-height:100vh}
+    a{color:inherit;text-decoration:none}
+
+    /* Password gate */
+    .gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:20px}
+    .gate h1{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:clamp(28px,5vw,48px);margin:0 0 8px;letter-spacing:-.02em}
+    .gate p{color:var(--muted);margin:0 0 20px}
+    .gate input{background:#111;border:1px solid var(--line);border-radius:14px;color:#fff;padding:15px 18px;font:700 18px Inter,sans-serif;width:280px;outline:none;text-align:center}
+    .gate input:focus{border-color:var(--gold)}
+    .gate button{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#060606;border:none;border-radius:999px;padding:15px 32px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;font-size:14px}
+    .gate button:hover{transform:translateY(-1px)}
+    .gate-error{color:var(--red);font-size:14px;font-weight:700;display:none}
+
+    /* Main diary layout */
+    .diary-main{max-width:var(--max);margin:0 auto;padding:24px}
+
+    /* Header */
+    .diary-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;padding:20px 0;border-bottom:1px solid var(--line);margin-bottom:28px}
+    .diary-header h1{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:32px;margin:0;letter-spacing:-.01em}
+    .diary-header .subtitle{color:var(--gold2);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.18em}
+    .diary-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+    /* View toggle */
+    .view-toggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+    .view-toggle button{background:transparent;border:none;color:var(--muted);padding:9px 18px;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;transition:.15s}
+    .view-toggle button.active{background:var(--gold);color:#060606}
+
+    /* Date nav */
+    .date-nav{display:flex;gap:8px;align-items:center}
+    .date-nav button{background:#111;border:1px solid var(--line);border-radius:12px;color:#fff;padding:9px 14px;cursor:pointer;font-size:18px;line-height:1;transition:.15s}
+    .date-nav button:hover{border-color:var(--gold)}
+    .date-nav span{font:700 18px Oswald,sans-serif;text-transform:uppercase;min-width:220px;text-align:center}
+
+    /* Capacity bar */
+    .capacity-bar{background:#111;border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+    .capacity-bar-label{color:var(--muted);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+    .capacity-track{flex:1;min-width:120px;height:8px;background:#1a1a1a;border-radius:999px;overflow:hidden}
+    .capacity-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .4s ease}
+    .capacity-pct{font:900 22px Oswald,sans-serif;color:var(--gold2)}
+
+    /* Walk-in button */
+    .btn{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:11px 18px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line);cursor:pointer;transition:.2s;font-size:13px}
+    .btn-primary{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#060606;border-color:transparent}
+    .btn-primary:hover{transform:translateY(-1px)}
+    .btn-ghost:hover{background:#fff;color:#000}
+    .btn-danger{background:transparent;border-color:var(--red);color:var(--red)}
+    .btn-danger:hover{background:var(--red);color:#fff}
+    .btn-small{padding:7px 12px;font-size:11px}
+
+    /* Booking cards */
+    .bookings-list{display:flex;flex-direction:column;gap:12px;margin-bottom:32px}
+    .booking-card{background:#0d0d0d;border:1px solid var(--line);border-radius:20px;padding:20px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+    .booking-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .booking-card-time{font:900 26px Oswald,sans-serif;color:var(--gold2)}
+    .booking-card-service{font:700 18px Oswald,sans-serif;text-transform:uppercase}
+    .booking-card-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}
+    .booking-card-meta span{color:var(--muted);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+    .booking-card-customer{color:#fff;font-weight:700;font-size:15px;margin-bottom:4px}
+    .booking-card-email{color:var(--muted);font-size:13px}
+    .booking-card-mobile{color:var(--muted);font-size:13px}
+    .booking-card-source{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+    .booking-card-source.walk_in{border-color:rgba(227,200,156,.4);color:var(--gold2)}
+    .status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+    .status-badge.confirmed{background:rgba(62,207,92,.15);border:1px solid rgba(62,207,92,.4);color:#3ecf5c}
+    .status-badge.attended{background:rgba(62,207,92,.25);border:1px solid rgba(62,207,92,.6);color:#3ecf5c}
+    .status-badge.no_show{background:rgba(224,48,48,.15);border:1px solid rgba(224,48,48,.4);color:#e03030}
+    .status-badge.cancelled{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--muted)}
+
+    /* Status actions */
+    .booking-card-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;min-width:140px}
+
+    /* Weekly grid */
+    .week-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:32px}
+    .week-day{border:1px solid var(--line);border-radius:18px;padding:16px;background:#0a0a0a;min-height:120px}
+    .week-day-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .week-day-name{font:700 12px Oswald,sans-serif;text-transform:uppercase;color:var(--muted);letter-spacing:.08em}
+    .week-day-date{font:900 18px Oswald,sans-serif;color:var(--gold2)}
+    .week-day.is-today .week-day-name{color:var(--gold2)}
+    .week-day-count{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-top:4px}
+    .week-slot{display:block;background:rgba(184,155,117,.12);border:1px solid rgba(184,155,117,.3);border-radius:8px;padding:6px 8px;margin-top:6px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;transition:.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .week-slot:hover{border-color:var(--gold);background:rgba(184,155,117,.2)}
+    .week-slot.customer-name{font-weight:700;color:var(--gold2)}
+    .week-capacity-pct{font-size:11px;color:var(--muted);margin-top:6px;text-align:center}
+
+    /* Empty state */
+    .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+    .empty-state h2{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:28px;color:#fff;margin:0 0 10px}
+    .empty-state p{margin:0}
+
+    /* Walk-in modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.open{display:flex}
+    .modal{background:#0d0d0d;border:1px solid var(--line);border-radius:24px;padding:32px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto}
+    .modal h2{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:26px;margin:0 0 24px}
+    .modal-close{float:right;background:transparent;border:none;color:var(--muted);font-size:24px;cursor:pointer;padding:4px}
+    .modal-form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .modal-form label{display:grid;gap:8px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    .modal-form input,.modal-form select{width:100%;border:1px solid var(--line);background:#070707;color:#fff;border-radius:14px;padding:13px;font:inherit;outline:none}
+    .modal-form input:focus,.modal-form select:focus{border-color:var(--gold)}
+    .modal-form .full{grid-column:1/-1}
+    .modal-actions{display:flex;gap:12px;margin-top:20px;justify-content:flex-end}
+
+    /* Loading */
+    .loading{text-align:center;padding:40px;color:var(--muted)}
+
+    /* Logout */
+    .logout{background:transparent;border:1px solid var(--line);color:var(--muted);padding:9px 16px;border-radius:999px;cursor:pointer;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+    .logout:hover{color:#fff;border-color:#fff}
+
+    @media (max-width:760px){
+      .week-grid{grid-template-columns:repeat(2,1fr)}
+      .booking-card{grid-template-columns:1fr}
+      .booking-card-actions{flex-direction:row;width:100%}
+      .diary-header{flex-direction:column;align-items:flex-start}
+    }
+    @media (max-width:480px){
+      .week-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<!-- Password Gate -->
+<div class="gate" id="gate">
+  <h1>Reset MCR Diary</h1>
+  <p>Enter your diary password</p>
+  <input type="password" id="gatePassword" placeholder="Password" />
+  <button onclick="checkPassword()">Open diary</button>
+  <p class="gate-error" id="gateError">Incorrect password. Try again.</p>
+</div>
+
+<!-- Diary App -->
+<div class="diary-main" id="diaryApp" style="display:none">
+  <header class="diary-header">
+    <div>
+      <div class="subtitle">Reset MCR</div>
+      <h1>Diary</h1>
+    </div>
+    <div class="diary-actions">
+      <div class="view-toggle">
+        <button class="active" id="dailyBtn" onclick="setView('daily')">Daily</button>
+        <button id="weeklyBtn" onclick="setView('weekly')">Weekly</button>
+      </div>
+      <div class="date-nav">
+        <button id="prevBtn" onclick="navigateDate(-1)">&#8592;</button>
+        <span id="dateLabel">—</span>
+        <button id="nextBtn" onclick="navigateDate(1)">&#8594;</button>
+      </div>
+      <button class="btn btn-primary" onclick="openWalkinModal()">+ Walk-in</button>
+      <button class="logout" onclick="logout()">Log out</button>
+    </div>
+  </header>
+
+  <!-- Capacity bar (weekly only) -->
+  <div class="capacity-bar" id="capacityBar" style="display:none">
+    <span class="capacity-bar-label">This week</span>
+    <div class="capacity-track"><div class="capacity-fill" id="capacityFill" style="width:0%"></div></div>
+    <span class="capacity-pct" id="capacityPct">0%</span>
+    <span style="color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;">capacity booked</span>
+  </div>
+
+  <!-- Daily bookings list -->
+  <div id="dailyView">
+    <div class="loading" id="loadingDaily">Loading…</div>
+    <div class="bookings-list" id="bookingsList" style="display:none"></div>
+    <div class="empty-state" id="emptyDaily" style="display:none">
+      <h2>No bookings</h2>
+      <p>Nothing scheduled for this day.</p>
+    </div>
+  </div>
+
+  <!-- Weekly grid -->
+  <div id="weeklyView" style="display:none">
+    <div class="loading" id="loadingWeekly">Loading…</div>
+    <div class="week-grid" id="weekGrid"></div>
+  </div>
+</div>
+
+<!-- Walk-in Modal -->
+<div class="modal-overlay" id="walkinModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeWalkinModal()">&times;</button>
+    <h2>Add walk-in</h2>
+    <form class="modal-form" id="walkinForm">
+      <label class="full">Customer name <input required name="customer_name" placeholder="Name" /></label>
+      <label>Mobile <input name="customer_mobile" placeholder="07..." /></label>
+      <label>Service
+        <select required name="service_id" id="walkinService">
+          <option value="">Select…</option>
+        </select>
+      </label>
+      <label>Barber
+        <select required name="staff_id" id="walkinStaff">
+          <option value="">Select…</option>
+        </select>
+      </label>
+      <label class="full">Date <input type="date" required name="date" id="walkinDate" /></label>
+      <label>Time <input type="time" required name="time" id="walkinTime" /></label>
+      <div class="modal-actions full">
+        <button type="button" class="btn btn-ghost" onclick="closeWalkinModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add walk-in</button>
+      </div>
+      <p id="walkinStatus" style="grid-column:1/-1;margin:8px 0 0;color:var(--gold2);font-size:13px;"></p>
+    </form>
+  </div>
+</div>
+
+<script>
+const PASSWORD = 'reset2026'; // v1 simple password — update in Vercel env vars
+const state = {
+  view: 'daily',
+  date: new Date().toISOString().split('T')[0],
+  bookings: [],
+  capacity: null,
+  staff: [],
+  services: []
+};
+
+function checkPassword() {
+  const pw = document.getElementById('gatePassword').value;
+  if (pw === PASSWORD) {
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('diaryApp').style.display = 'block';
+    loadDiary();
+  } else {
+    document.getElementById('gateError').style.display = 'block';
+  }
+}
+
+function logout() {
+  document.getElementById('diaryApp').style.display = 'none';
+  document.getElementById('gate').style.display = 'flex';
+  document.getElementById('gatePassword').value = '';
+  document.getElementById('gateError').style.display = 'none';
+}
+
+function setView(v) {
+  state.view = v;
+  document.getElementById('dailyBtn').classList.toggle('active', v === 'daily');
+  document.getElementById('weeklyBtn').classList.toggle('active', v === 'weekly');
+  document.getElementById('dailyView').style.display = v === 'daily' ? 'block' : 'none';
+  document.getElementById('weeklyView').style.display = v === 'weekly' ? 'block' : 'none';
+  document.getElementById('capacityBar').style.display = v === 'weekly' ? 'flex' : 'none';
+  loadDiary();
+}
+
+function navigateDate(dir) {
+  const d = new Date(state.date);
+  if (state.view === 'weekly') {
+    d.setDate(d.getDate() + (dir * 7));
+  } else {
+    d.setDate(d.getDate() + dir);
+  }
+  state.date = d.toISOString().split('T')[0];
+  loadDiary();
+}
+
+function formatDate(d) {
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+}
+
+function formatShortDate(d) {
+  return new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function formatTime(isoStr) {
+  return new Date(isoStr).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+}
+
+async function loadDiary() {
+  const label = document.getElementById('dateLabel');
+  label.textContent = formatDate(state.date);
+
+  if (state.view === 'daily') {
+    document.getElementById('loadingDaily').style.display = 'block';
+    document.getElementById('bookingsList').style.display = 'none';
+    document.getElementById('emptyDaily').style.display = 'none';
+  } else {
+    document.getElementById('loadingWeekly').style.display = 'block';
+    document.getElementById('weekGrid').innerHTML = '';
+  }
+
+  try {
+    const res = await fetch(`/api/diary?date=${state.date}&view=${state.view}`, {
+      headers: { 'X-Diary-Password': PASSWORD }
+    });
+    const data = await res.json();
+    state.bookings = data.bookings || [];
+    state.capacity = data.capacity;
+
+    if (state.view === 'daily') {
+      renderDaily();
+    } else {
+      renderWeekly();
+    }
+  } catch (err) {
+    console.error(err);
+    if (state.view === 'daily') {
+      document.getElementById('loadingDaily').textContent = 'Failed to load. Refresh to try again.';
+    }
+  }
+}
+
+function renderDaily() {
+  document.getElementById('loadingDaily').style.display = 'none';
+  const list = document.getElementById('bookingsList');
+  const empty = document.getElementById('emptyDaily');
+
+  if (state.bookings.length === 0) {
+    list.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+
+  empty.style.display = 'none';
+  list.style.display = 'flex';
+
+  list.innerHTML = state.bookings.map(b => {
+    const apptTime = new Date(b.start).getTime();
+    const now = Date.now();
+    const minsUntil = Math.round((apptTime - now) / 60000);
+    const isPast = now > apptTime;
+
+    return `
+    <div class="booking-card">
+      <div>
+        <div class="booking-card-header">
+          <span class="booking-card-time">${formatTime(b.start)}</span>
+          <span class="status-badge ${b.status}">${b.status.replace('_',' ')}</span>
+          <span class="booking-card-source ${b.is_recurring ? 'recurring' : ''}">${b.is_recurring ? b.recurring_interval : 'online'}</span>
+        </div>
+        <div class="booking-card-customer">${b.customer_name || 'Unknown'}</div>
+        <div class="booking-card-service">${b.service_name}</div>
+        <div class="booking-card-meta">
+          <span>${b.staff_name}</span>
+          <span>${Math.round((new Date(b.end) - new Date(b.start)) / 60000)} min</span>
+          ${b.customer_email ? `<span>${b.customer_email}</span>` : ''}
+          ${b.customer_mobile ? `<span>${b.customer_mobile}</span>` : ''}
+        </div>
+      </div>
+      <div class="booking-card-actions">
+        ${b.status === 'confirmed' ? `
+          <button class="btn btn-small btn-primary" onclick="markAttendance('${b.id}','attended')">Attended</button>
+          <button class="btn btn-small btn-danger" onclick="markAttendance('${b.id}','no_show')">No-show</button>
+          <button class="btn btn-small btn-ghost" onclick="cancelBooking('${b.id}')">Cancel</button>
+        ` : ''}
+      </div>
+    </div>
+  `}).join('');
+}
+
+function renderWeekly() {
+  document.getElementById('loadingWeekly').style.display = 'none';
+
+  // Update capacity bar
+  if (state.capacity !== null) {
+    document.getElementById('capacityFill').style.width = state.capacity + '%';
+    document.getElementById('capacityPct').textContent = state.capacity + '%';
+  }
+
+  // Get week starting Sunday
+  const currentDate = new Date(state.date);
+  const dayOfWeek = currentDate.getDay();
+  const weekStart = new Date(currentDate);
+  weekStart.setDate(currentDate.getDate() - dayOfWeek);
+
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+
+  const today = new Date().toISOString().split('T')[0];
+
+  document.getElementById('weekGrid').innerHTML = days.map(day => {
+    const dayBookings = state.bookings.filter(b => b.start.startsWith(day));
+    const dayName = new Date(day + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short' });
+    const dayNum = new Date(day + 'T00:00:00').getDate();
+    const isToday = day === today;
+
+    return `
+    <div class="week-day${isToday ? ' is-today' : ''}">
+      <div class="week-day-header">
+        <span class="week-day-name">${dayName}</span>
+        <span class="week-day-date">${dayNum}</span>
+      </div>
+      ${dayBookings.length === 0 ? '<span class="week-day-count">No bookings</span>' : ''}
+      ${dayBookings.slice(0, 4).map(b => `
+        <div class="week-slot" title="${b.customer_name} — ${b.service_name}">
+          <span class="customer-name">${formatTime(b.start)}</span><br/>
+          ${b.customer_name} — ${b.service_name}
+        </div>
+      `).join('')}
+      ${dayBookings.length > 4 ? `<div class="week-day-count">+${dayBookings.length - 4} more</div>` : ''}
+    </div>
+  `}).join('');
+}
+
+async function markAttendance(bookingId, status) {
+  if (!confirm(`Mark as ${status.replace('_',' ')}?`)) return;
+  try {
+    const res = await fetch('/api/attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+      body: JSON.stringify({ booking_id: bookingId, status })
+    });
+    if (res.ok) loadDiary();
+    else alert('Failed to update. Try again.');
+  } catch (_) { alert('Error. Try again.'); }
+}
+
+async function cancelBooking(bookingId) {
+  const reason = prompt('Reason for cancellation (optional):');
+  try {
+    const res = await fetch('/api/attendance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+      body: JSON.stringify({ booking_id: bookingId, status: 'cancelled', cancellation_reason: reason || null })
+    });
+    if (res.ok) loadDiary();
+    else alert('Failed to cancel. Try again.');
+  } catch (_) { alert('Error. Try again.'); }
+}
+
+function openWalkinModal() {
+  document.getElementById('walkinModal').classList.add('open');
+  document.getElementById('walkinDate').value = state.date;
+  document.getElementById('walkinStatus').textContent = '';
+  // Load staff and services
+  if (state.staff.length === 0) {
+    fetch('/api/diary?date=' + state.date + '&view=daily', { headers: { 'X-Diary-Password': PASSWORD } })
+      .then(r => r.json())
+      .then(data => {
+        // We need to get staff/services from somewhere — use a simple approach
+        // Hardcode for now since no dedicated endpoint
+        document.getElementById('walkinStaff').innerHTML = `
+          <option value="">Select…</option>
+          <option value="staff-jack">Jack</option>
+          <option value="staff-jaden">Jaden</option>
+        `;
+        document.getElementById('walkinService').innerHTML = `
+          <option value="">Select…</option>
+          <option value="svc-1">Haircut</option>
+          <option value="svc-2">Hair + Beard</option>
+          <option value="svc-3">Beard Only</option>
+          <option value="svc-4">Kids Cut</option>
+          <option value="svc-5">Cut-Throat Shave</option>
+          <option value="svc-6">Haircut + Cut-Throat</option>
+        `;
+      });
+  }
+}
+
+function closeWalkinModal() {
+  document.getElementById('walkinModal').classList.remove('open');
+}
+
+document.getElementById('walkinForm')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const date = fd.get('date');
+  const time = fd.get('time');
+  const statusEl = document.getElementById('walkinStatus');
+
+  if (!date || !time) { statusEl.textContent = 'Date and time required.'; return; }
+
+  statusEl.textContent = 'Adding walk-in…';
+  try {
+    const res = await fetch('/api/walkin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+      body: JSON.stringify({
+        customer_name: fd.get('customer_name'),
+        customer_mobile: fd.get('customer_mobile'),
+        service_id: fd.get('service_id'),
+        staff_id: fd.get('staff_id'),
+        start_datetime: `${date}T${time}:00`
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      statusEl.textContent = 'Walk-in added successfully.';
+      e.target.reset();
+      setTimeout(closeWalkinModal, 1200);
+      loadDiary();
+    } else {
+      statusEl.textContent = data.error || 'Failed to add walk-in.';
+    }
+  } catch (_) {
+    statusEl.textContent = 'Error. Try again.';
+  }
+});
+
+// Close modal on outside click
+document.getElementById('walkinModal')?.addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) closeWalkinModal();
+});
+
+// Enter key on password
+document.getElementById('gatePassword')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') checkPassword();
+});
+</script>
+</body>
+</html>

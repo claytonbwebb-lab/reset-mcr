@@ -2,8 +2,12 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/lead", "destination": "/api/lead.js" },
-    { "source": "/api/booking", "destination": "/api/booking.js" }
+    { "source": "/api/booking", "destination": "/api/booking.js" },
+    { "source": "/api/availability", "destination": "/api/availability.js" },
+    { "source": "/api/diary", "destination": "/api/diary.js" },
+    { "source": "/api/attendance", "destination": "/api/attendance.js" },
+    { "source": "/api/walkin", "destination": "/api/walkin.js" },
+    { "source": "/api/admin", "destination": "/api/admin.js" }
   ],
   "headers": [
     {
