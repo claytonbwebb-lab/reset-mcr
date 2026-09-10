@@ -13,8 +13,10 @@
     *{box-sizing:border-box}
     body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;line-height:1.55;min-height:100vh}
     a{color:inherit;text-decoration:none}
+    input,select,button{font-family:inherit}
+    input[type="date"],input[type="datetime-local"],input[type="time"]{color-scheme:dark}
 
-    /* Password gate */
+    /* ── Password Gate ── */
     .gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:20px}
     .gate h1{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:clamp(28px,5vw,48px);margin:0 0 8px;letter-spacing:-.02em}
     .gate p{color:var(--muted);margin:0 0 20px}
@@ -24,25 +26,61 @@
     .gate button:hover{transform:translateY(-1px)}
     .gate-error{color:var(--red);font-size:14px;font-weight:700;display:none}
 
-    /* Main diary layout */
-    .diary-main{max-width:var(--max);margin:0 auto;padding:24px}
+    /* ── App Shell ── */
+    .app{display:none;flex-direction:column;min-height:100vh}
+    .app.open{display:flex}
 
-    /* Header */
-    .diary-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;padding:20px 0;border-bottom:1px solid var(--line);margin-bottom:28px}
-    .diary-header h1{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:32px;margin:0;letter-spacing:-.01em}
-    .diary-header .subtitle{color:var(--gold2);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.18em}
-    .diary-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    /* ── Top Nav ── */
+    .topnav{display:flex;justify-content:space-between;align-items:center;padding:16px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:12px}
+    .topnav-brand{display:flex;flex-direction:column}
+    .topnav-brand .brand{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:22px;letter-spacing:-.01em;font-weight:700}
+    .topnav-brand .brand-sub{color:var(--gold2);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;margin-top:-2px}
+    .topnav-center{display:flex;gap:4px;background:#0d0d0d;border:1px solid var(--line);border-radius:16px;padding:5px}
+    .topnav-tab{padding:9px 22px;border-radius:12px;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;border:none;background:transparent;color:var(--muted);transition:.15s}
+    .topnav-tab:hover{color:#fff}
+    .topnav-tab.active{background:var(--gold);color:#060606}
+    .topnav-right{display:flex;gap:8px;align-items:center}
+    .logout{background:transparent;border:1px solid var(--line);color:var(--muted);padding:9px 16px;border-radius:999px;cursor:pointer;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
+    .logout:hover{color:#fff;border-color:#fff}
 
-    /* View toggle */
-    .view-toggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
-    .view-toggle button{background:transparent;border:none;color:var(--muted);padding:9px 18px;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;transition:.15s}
-    .view-toggle button.active{background:var(--gold);color:#060606}
+    /* ── Main Content ── */
+    .main{max-width:var(--max);width:100%;margin:0 auto;padding:28px 24px 60px}
+
+    /* ── Shared Components ── */
+    .btn{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:11px 18px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line);cursor:pointer;transition:.2s;font-size:13px}
+    .btn-primary{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#060606;border-color:transparent}
+    .btn-primary:hover{transform:translateY(-1px)}
+    .btn-ghost{background:transparent;color:#fff}
+    .btn-ghost:hover{background:#fff;color:#000}
+    .btn-danger{background:transparent;border-color:var(--red);color:var(--red)}
+    .btn-danger:hover{background:var(--red);color:#fff}
+    .btn-small{padding:7px 12px;font-size:11px}
+    .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+    .loading{text-align:center;padding:40px;color:var(--muted)}
+
+    /* ── Section header ── */
+    .section-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+    .section-header h2{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:24px;margin:0;letter-spacing:-.01em}
+
+    /* ── Status badges ── */
+    .status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
+    .status-badge.confirmed{background:rgba(62,207,92,.15);border:1px solid rgba(62,207,92,.4);color:#3ecf5c}
+    .status-badge.attended{background:rgba(62,207,92,.25);border:1px solid rgba(62,207,92,.6);color:#3ecf5c}
+    .status-badge.no_show{background:rgba(224,48,48,.15);border:1px solid rgba(224,48,48,.4);color:#e03030}
+    .status-badge.cancelled{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--muted)}
+
+    /* ── Diary view ── */
+    .view{display:none}
+    .view.active{display:block}
 
     /* Date nav */
-    .date-nav{display:flex;gap:8px;align-items:center}
+    .date-nav{display:flex;gap:8px;align-items:center;margin-bottom:24px}
     .date-nav button{background:#111;border:1px solid var(--line);border-radius:12px;color:#fff;padding:9px 14px;cursor:pointer;font-size:18px;line-height:1;transition:.15s}
     .date-nav button:hover{border-color:var(--gold)}
     .date-nav span{font:700 18px Oswald,sans-serif;text-transform:uppercase;min-width:220px;text-align:center}
+    .view-toggle{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:24px}
+    .view-toggle button{background:transparent;border:none;color:var(--muted);padding:9px 18px;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;transition:.15s}
+    .view-toggle button.active{background:var(--gold);color:#060606}
 
     /* Capacity bar */
     .capacity-bar{background:#111;border:1px solid var(--line);border-radius:16px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -50,15 +88,6 @@
     .capacity-track{flex:1;min-width:120px;height:8px;background:#1a1a1a;border-radius:999px;overflow:hidden}
     .capacity-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold2),var(--gold));transition:width .4s ease}
     .capacity-pct{font:900 22px Oswald,sans-serif;color:var(--gold2)}
-
-    /* Walk-in button */
-    .btn{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:11px 18px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;border:1px solid var(--line);cursor:pointer;transition:.2s;font-size:13px}
-    .btn-primary{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#060606;border-color:transparent}
-    .btn-primary:hover{transform:translateY(-1px)}
-    .btn-ghost:hover{background:#fff;color:#000}
-    .btn-danger{background:transparent;border-color:var(--red);color:var(--red)}
-    .btn-danger:hover{background:var(--red);color:#fff}
-    .btn-small{padding:7px 12px;font-size:11px}
 
     /* Booking cards */
     .bookings-list{display:flex;flex-direction:column;gap:12px;margin-bottom:32px}
@@ -73,13 +102,6 @@
     .booking-card-mobile{color:var(--muted);font-size:13px}
     .booking-card-source{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;padding:4px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
     .booking-card-source.walk_in{border-color:rgba(227,200,156,.4);color:var(--gold2)}
-    .status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
-    .status-badge.confirmed{background:rgba(62,207,92,.15);border:1px solid rgba(62,207,92,.4);color:#3ecf5c}
-    .status-badge.attended{background:rgba(62,207,92,.25);border:1px solid rgba(62,207,92,.6);color:#3ecf5c}
-    .status-badge.no_show{background:rgba(224,48,48,.15);border:1px solid rgba(224,48,48,.4);color:#e03030}
-    .status-badge.cancelled{background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--muted)}
-
-    /* Status actions */
     .booking-card-actions{display:flex;flex-direction:column;gap:8px;align-items:flex-end;min-width:140px}
 
     /* Weekly grid */
@@ -93,41 +115,116 @@
     .week-slot{display:block;background:rgba(184,155,117,.12);border:1px solid rgba(184,155,117,.3);border-radius:8px;padding:6px 8px;margin-top:6px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;transition:.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .week-slot:hover{border-color:var(--gold);background:rgba(184,155,117,.2)}
     .week-slot.customer-name{font-weight:700;color:var(--gold2)}
-    .week-capacity-pct{font-size:11px;color:var(--muted);margin-top:6px;text-align:center}
-
-    /* Empty state */
     .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
     .empty-state h2{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:28px;color:#fff;margin:0 0 10px}
     .empty-state p{margin:0}
 
-    /* Walk-in modal */
+    /* ── Walk-in / Manual booking modal ── */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
     .modal-overlay.open{display:flex}
-    .modal{background:#0d0d0d;border:1px solid var(--line);border-radius:24px;padding:32px;max-width:480px;width:100%;max-height:90vh;overflow-y:auto}
+    .modal{background:#0d0d0d;border:1px solid var(--line);border-radius:24px;padding:32px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto}
     .modal h2{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:26px;margin:0 0 24px}
-    .modal-close{float:right;background:transparent;border:none;color:var(--muted);font-size:24px;cursor:pointer;padding:4px}
+    .modal-close{float:right;background:transparent;border:none;color:var(--muted);font-size:24px;cursor:pointer;padding:4px;line-height:1}
+    .modal-close:hover{color:#fff}
     .modal-form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     .modal-form label{display:grid;gap:8px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-    .modal-form input,.modal-form select{width:100%;border:1px solid var(--line);background:#070707;color:#fff;border-radius:14px;padding:13px;font:inherit;outline:none}
+    .modal-form input,.modal-form select{width:100%;border:1px solid var(--line);background:#070707;color:#fff;border-radius:14px;padding:13px;outline:none;transition:border-color .15s}
     .modal-form input:focus,.modal-form select:focus{border-color:var(--gold)}
+    .modal-form input[readonly]{opacity:.5}
     .modal-form .full{grid-column:1/-1}
+    .modal-form .hint{font-size:11px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0}
     .modal-actions{display:flex;gap:12px;margin-top:20px;justify-content:flex-end}
+    .modal-status{grid-column:1/-1;margin:8px 0 0;font-size:13px;font-weight:700}
+    .modal-status.error{color:var(--red)}
+    .modal-status.ok{color:var(--green)}
 
-    /* Loading */
-    .loading{text-align:center;padding:40px;color:var(--muted)}
+    /* ── Settings ── */
+    .settings-tabs{display:flex;gap:4px;margin-bottom:28px;border-bottom:1px solid var(--line);padding-bottom:0}
+    .settings-tab{padding:10px 20px;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.07em;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px;transition:.15s}
+    .settings-tab:hover{color:#fff}
+    .settings-tab.active{color:var(--gold2);border-bottom-color:var(--gold2)}
 
-    /* Logout */
-    .logout{background:transparent;border:1px solid var(--line);color:var(--muted);padding:9px 16px;border-radius:999px;cursor:pointer;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.08em}
-    .logout:hover{color:#fff;border-color:#fff}
+    /* Staff hours grid */
+    .staff-hours-card{background:#0a0a0a;border:1px solid var(--line);border-radius:20px;padding:24px;margin-bottom:20px}
+    .staff-hours-card h3{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:18px;margin:0 0 16px;color:var(--gold2)}
+    .hours-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:16px}
+    .hours-day-cell{display:flex;flex-direction:column;gap:6px}
+    .hours-day-label{font:700 11px Oswald,sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);text-align:center}
+    .hours-day-cell{background:#111;border:1px solid var(--line);border-radius:12px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .hours-day-cell.off{background:rgba(224,48,48,.05);border-color:rgba(224,48,48,.2)}
+    .hours-toggle{width:20px;height:20px;cursor:pointer;accent-color:var(--gold)}
+    .hours-time-input{width:100%;background:#070707;border:1px solid var(--line);border-radius:8px;color:#fff;padding:6px 4px;font-size:12px;text-align:center;outline:none}
+    .hours-time-input:focus{border-color:var(--gold)}
+    .hours-time-input:disabled{opacity:.3}
+    .hours-break-row{display:flex;flex-direction:column;gap:3px;width:100%}
+    .hours-break-label{font-size:10px;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.05em}
+    .hours-break-inputs{display:flex;gap:3px;justify-content:center}
+    .hours-break-inputs input{width:54px;background:#070707;border:1px solid var(--line);border-radius:6px;color:#fff;padding:5px 2px;font-size:11px;text-align:center;outline:none}
+    .hours-break-inputs input:focus{border-color:var(--gold)}
+    .hours-break-inputs input:disabled{opacity:.3}
+    .hours-actions{display:flex;gap:8px;flex-wrap:wrap}
 
+    /* Time-off list */
+    .timeoff-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+    .timeoff-item{background:#0a0a0a;border:1px solid var(--line);border-radius:16px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+    .timeoff-item-left{display:flex;flex-direction:column;gap:4px}
+    .timeoff-item-dates{font-weight:800;font-size:15px}
+    .timeoff-item-reason{color:var(--muted);font-size:13px}
+    .timeoff-item-staff{color:var(--gold2);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+
+    /* Customer search result */
+    .customer-result{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#111;border:1px solid var(--line);border-radius:12px;cursor:pointer;transition:.15s;margin-top:8px}
+    .customer-result:hover{border-color:var(--gold)}
+    .customer-result.selected{border-color:var(--gold);background:rgba(184,155,117,.08)}
+    .customer-result-name{font-weight:700;font-size:14px}
+    .customer-result-meta{color:var(--muted);font-size:12px}
+    .customer-result-blocked{color:var(--red);font-size:11px;font-weight:900;text-transform:uppercase}
+    .customer-create-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+    .customer-create-form label{display:grid;gap:6px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+    .customer-create-form input{width:100%;border:1px solid var(--line);background:#070707;color:#fff;border-radius:10px;padding:10px;outline:none;font-size:14px}
+    .customer-create-form input:focus{border-color:var(--gold)}
+    .customer-create-form .full{grid-column:1/-1}
+    .form-actions{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+
+    /* Availability key */
+    .avail-key{font-size:12px;color:var(--muted);margin-bottom:12px}
+    .avail-key span{margin-right:16px}
+
+    /* Staff cards */
+    .staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+    .staff-card{background:#0a0a0a;border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:12px}
+    .staff-card.inactive{opacity:.5}
+    .staff-card-header{display:flex;align-items:center;gap:16px}
+    .staff-card-avatar{width:60px;height:60px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font:900 24px Oswald,sans-serif;color:#060606;flex-shrink:0}
+    .staff-card-info{flex:1;min-width:0}
+    .staff-card-name{font:700 20px Oswald,sans-serif;text-transform:uppercase;color:#fff}
+    .staff-card-role{color:var(--gold2);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em}
+    .staff-card-bio{color:var(--muted);font-size:13px;line-height:1.5}
+    .staff-card-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+
+    /* Service durations */
+    .durations-section{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+    .durations-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:10px}
+    .durations-grid{display:flex;flex-direction:column;gap:6px}
+    .duration-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#111;border:1px solid var(--line);border-radius:10px;font-size:13px}
+    .duration-row span:first-child{font-weight:700;color:#fff}
+    .duration-row input{width:52px;background:#070707;border:1px solid var(--line);border-radius:8px;color:#fff;padding:5px 4px;font-size:12px;text-align:center;outline:none}
+    .duration-row input:focus{border-color:var(--gold)}
+
+    /* Responsive */
+    @media (max-width:900px){
+      .hours-grid{grid-template-columns:repeat(4,1fr)}
+    }
     @media (max-width:760px){
       .week-grid{grid-template-columns:repeat(2,1fr)}
       .booking-card{grid-template-columns:1fr}
       .booking-card-actions{flex-direction:row;width:100%}
-      .diary-header{flex-direction:column;align-items:flex-start}
+      .hours-grid{grid-template-columns:repeat(3,1fr)}
     }
     @media (max-width:480px){
       .week-grid{grid-template-columns:1fr}
+      .hours-grid{grid-template-columns:repeat(2,1fr)}
+      .topnav-center{order:3;width:100%;justify-content:center}
     }
   </style>
 </head>
@@ -142,109 +239,404 @@
   <p class="gate-error" id="gateError">Incorrect password. Try again.</p>
 </div>
 
-<!-- Diary App -->
-<div class="diary-main" id="diaryApp" style="display:none">
-  <header class="diary-header">
-    <div>
-      <div class="subtitle">Reset MCR</div>
-      <h1>Diary</h1>
+<!-- App -->
+<div class="app" id="app">
+
+  <!-- Top nav -->
+  <nav class="topnav">
+    <div class="topnav-brand">
+      <div class="brand">Reset MCR</div>
+      <div class="brand-sub">Diary &amp; Admin</div>
     </div>
-    <div class="diary-actions">
-      <div class="view-toggle">
-        <button class="active" id="dailyBtn" onclick="setView('daily')">Daily</button>
-        <button id="weeklyBtn" onclick="setView('weekly')">Weekly</button>
-      </div>
-      <div class="date-nav">
-        <button id="prevBtn" onclick="navigateDate(-1)">&#8592;</button>
-        <span id="dateLabel">—</span>
-        <button id="nextBtn" onclick="navigateDate(1)">&#8594;</button>
-      </div>
-      <button class="btn btn-primary" onclick="openWalkinModal()">+ Walk-in</button>
+    <div class="topnav-center">
+      <button class="topnav-tab active" id="tabDiary" onclick="switchAppTab('diary')">Diary</button>
+      <button class="topnav-tab" id="tabSettings" onclick="switchAppTab('settings')">Settings</button>
+    </div>
+    <div class="topnav-right">
       <button class="logout" onclick="logout()">Log out</button>
     </div>
-  </header>
+  </nav>
 
-  <!-- Capacity bar (weekly only) -->
-  <div class="capacity-bar" id="capacityBar" style="display:none">
-    <span class="capacity-bar-label">This week</span>
-    <div class="capacity-track"><div class="capacity-fill" id="capacityFill" style="width:0%"></div></div>
-    <span class="capacity-pct" id="capacityPct">0%</span>
-    <span style="color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;">capacity booked</span>
-  </div>
+  <!-- ── Diary View ── -->
+  <div class="main view active" id="viewDiary">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div class="date-nav">
+        <button onclick="navigateDate(-1)">&#8592;</button>
+        <span id="dateLabel">—</span>
+        <button onclick="navigateDate(1)">&#8594;</button>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div class="view-toggle">
+          <button class="active" id="dailyBtn" onclick="setView('daily')">Daily</button>
+          <button id="weeklyBtn" onclick="setView('weekly')">Weekly</button>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('walkin')">+ Manual Booking</button>
+      </div>
+    </div>
 
-  <!-- Daily bookings list -->
-  <div id="dailyView">
-    <div class="loading" id="loadingDaily">Loading…</div>
-    <div class="bookings-list" id="bookingsList" style="display:none"></div>
-    <div class="empty-state" id="emptyDaily" style="display:none">
-      <h2>No bookings</h2>
-      <p>Nothing scheduled for this day.</p>
+    <div class="capacity-bar" id="capacityBar" style="display:none">
+      <span class="capacity-bar-label">This week</span>
+      <div class="capacity-track"><div class="capacity-fill" id="capacityFill" style="width:0%"></div></div>
+      <span class="capacity-pct" id="capacityPct">0%</span>
+      <span style="color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;">capacity booked</span>
+    </div>
+
+    <!-- Daily -->
+    <div id="dailyView">
+      <div class="loading" id="loadingDaily">Loading…</div>
+      <div class="bookings-list" id="bookingsList" style="display:none"></div>
+      <div class="empty-state" id="emptyDaily" style="display:none">
+        <h2>No bookings</h2>
+        <p>Nothing scheduled for this day.</p>
+      </div>
+    </div>
+
+    <!-- Weekly -->
+    <div id="weeklyView" style="display:none">
+      <div class="loading" id="loadingWeekly">Loading…</div>
+      <div class="week-grid" id="weekGrid"></div>
     </div>
   </div>
 
-  <!-- Weekly grid -->
-  <div id="weeklyView" style="display:none">
-    <div class="loading" id="loadingWeekly">Loading…</div>
-    <div class="week-grid" id="weekGrid"></div>
+  <!-- ── Settings View ── -->
+  <div class="main view" id="viewSettings">
+
+    <div class="settings-tabs">
+      <button class="settings-tab" id="stTabStaff" onclick="switchSettingsTab('staff')">Staff</button>
+      <button class="settings-tab active" id="stTabHours" onclick="switchSettingsTab('hours')">Hours</button>
+      <button class="settings-tab" id="stTabTimeoff" onclick="switchSettingsTab('timeoff')">Time Off</button>
+      <button class="settings-tab" id="stTabBooking" onclick="switchSettingsTab('booking')">Bookings</button>
+    </div>
+
+    <!-- ── Staff ── -->
+    <div id="settingsStaff" style="display:none">
+      <div class="section-header">
+        <h2>Staff</h2>
+        <button class="btn btn-primary" onclick="openStaffModal()">+ Add Barber</button>
+      </div>
+      <div id="staffList"><div class="loading">Loading…</div></div>
+    </div>
+
+    <!-- ── Staff Hours ── -->
+    <div id="settingsHours">
+      <div class="section-header">
+        <h2>Staff Working Hours</h2>
+      </div>
+      <p class="avail-key">
+        <span>☐ = Day off</span>
+        <span>□ = Working</span>
+      </p>
+      <div id="staffHoursList"><div class="loading">Loading staff…</div></div>
+    </div>
+
+    <!-- ── Time Off ── -->
+    <div id="settingsTimeoff" style="display:none">
+      <div class="section-header">
+        <h2>Upcoming Time Off</h2>
+        <button class="btn btn-primary" onclick="openModal('timeoff')">+ Add Time Off</button>
+      </div>
+      <div id="timeoffList"><div class="loading">Loading…</div></div>
+    </div>
+
+    <!-- ── Manual Bookings ── -->
+    <div id="settingsBooking" style="display:none">
+      <div class="section-header">
+        <h2>Manual Bookings</h2>
+        <button class="btn btn-primary" onclick="openModal('walkin')">+ Add Booking</button>
+      </div>
+      <p style="color:var(--muted);font-size:14px;margin:0 0 16px;">Use this to add a booking on behalf of a customer. confirmation email will NOT be sent for manual bookings.</p>
+      <div id="recentManualBookings"><div class="loading">Loading…</div></div>
+    </div>
+
   </div>
 </div>
 
-<!-- Walk-in Modal -->
-<div class="modal-overlay" id="walkinModal">
+<!-- ── Manual Booking Modal ── -->
+<div class="modal-overlay" id="modalWalkin">
   <div class="modal">
-    <button class="modal-close" onclick="closeWalkinModal()">&times;</button>
-    <h2>Add walk-in</h2>
-    <form class="modal-form" id="walkinForm">
-      <label class="full">Customer name <input required name="customer_name" placeholder="Name" /></label>
-      <label>Mobile <input name="customer_mobile" placeholder="07..." /></label>
-      <label>Service
-        <select required name="service_id" id="walkinService">
-          <option value="">Select…</option>
-        </select>
-      </label>
-      <label>Barber
-        <select required name="staff_id" id="walkinStaff">
-          <option value="">Select…</option>
-        </select>
-      </label>
-      <label class="full">Date <input type="date" required name="date" id="walkinDate" /></label>
-      <label>Time <input type="time" required name="time" id="walkinTime" /></label>
-      <div class="modal-actions full">
-        <button type="button" class="btn btn-ghost" onclick="closeWalkinModal()">Cancel</button>
-        <button type="submit" class="btn btn-primary">Add walk-in</button>
+    <button class="modal-close" onclick="closeModal('walkin')">&times;</button>
+    <h2>Add Booking</h2>
+    <form id="walkinForm" onsubmit="submitWalkin(event)">
+      <!-- Step 1: Service -->
+      <div id="walkinStep1">
+        <p style="color:var(--muted);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin:0 0 14px;">Step 1 — Service</p>
+        <div class="modal-form">
+          <label class="full">Service
+            <select required id="walkinService" onchange="onWalkinServiceChange()">
+              <option value="">Select service…</option>
+            </select>
+          </label>
+          <label>Barber
+            <select required id="walkinStaff" onchange="onWalkinStaffChange()">
+              <option value="">Select barber…</option>
+            </select>
+          </label>
+          <label>Duration
+            <input id="walkinDuration" type="text" readonly placeholder="—" />
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="closeModal('walkin')">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="walkinStep1Next()">Next</button>
+        </div>
       </div>
-      <p id="walkinStatus" style="grid-column:1/-1;margin:8px 0 0;color:var(--gold2);font-size:13px;"></p>
+
+      <!-- Step 2: Date & Time -->
+      <div id="walkinStep2" style="display:none">
+        <p style="color:var(--muted);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin:0 0 14px;">Step 2 — Date &amp; Time</p>
+        <div class="modal-form">
+          <label>Date
+            <input type="date" required id="walkinDate" onchange="onWalkinDateChange()" />
+          </label>
+          <label>Available Slots
+            <select required id="walkinSlot" onchange="onWalkinSlotChange()">
+              <option value="">Select a slot…</option>
+            </select>
+          </label>
+        </div>
+        <div id="walkinSlotLoading" style="display:none;text-align:center;padding:16px;color:var(--muted);font-size:13px;">Loading slots…</div>
+        <div id="walkinSlotError" style="display:none;text-align:center;padding:16px;color:var(--red);font-size:13px;">No slots available on this date.</div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="walkinStep2Back()">Back</button>
+          <button type="button" class="btn btn-primary" id="walkinStep2NextBtn" onclick="walkinStep2Next()" disabled>Next</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Customer -->
+      <div id="walkinStep3" style="display:none">
+        <p style="color:var(--muted);font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin:0 0 14px;">Step 3 — Customer</p>
+
+        <!-- Search existing -->
+        <label style="display:grid;gap:8px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:4px;">Search existing customer
+          <input id="walkinCustomerSearch" type="text" placeholder="Type name or email…" oninput="searchCustomer(this.value)" autocomplete="off" style="width:100%;border:1px solid var(--line);background:#070707;color:#fff;border-radius:14px;padding:13px;outline:none;font-size:14px" />
+        </label>
+        <div id="customerSearchResults"></div>
+
+        <!-- Or create new -->
+        <div id="customerCreateForm">
+          <p style="color:var(--gold2);font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;margin:16px 0 10px;">Or add new customer</p>
+          <div class="customer-create-form">
+            <label class="full">Full name *
+              <input id="walkinCustName" type="text" placeholder="Name" /></label>
+            <label>Email *
+              <input id="walkinCustEmail" type="email" placeholder="email@example.com" /></label>
+            <label class="full">Mobile
+              <input id="walkinCustMobile" type="tel" placeholder="07..." /></label>
+          </div>
+        </div>
+
+        <p id="walkinBlockedMsg" style="display:none;color:var(--red);font-size:13px;font-weight:700;margin:10px 0 0;">This customer is blocked. Unblock them before booking.</p>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-ghost" onclick="walkinStep3Back()">Back</button>
+          <button type="submit" class="btn btn-primary" id="walkinSubmitBtn">Add Booking</button>
+        </div>
+        <p class="modal-status" id="walkinStatus"></p>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Staff Modal ── -->
+<div class="modal-overlay" id="modalStaff">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('staff')">&times;</button>
+    <h2 id="staffModalTitle">Add Barber</h2>
+    <form id="staffForm" onsubmit="submitStaff(event)">
+      <div class="modal-form">
+        <label>Name *
+          <input id="staffName" type="text" required placeholder="Jack" />
+        </label>
+        <label>Role *
+          <input id="staffRole" type="text" required placeholder="Senior Barber" />
+        </label>
+        <label class="full">Bio
+          <input id="staffBio" type="text" placeholder="Short bio…" />
+        </label>
+      </div>
+      <input type="hidden" id="staffEditId" value="" />
+      <div class="modal-actions">
+        <button type="button" class="btn btn-danger" id="deleteStaffBtn" style="display:none" onclick="deleteStaff()">Delete</button>
+        <button type="button" class="btn btn-ghost" onclick="closeModal('staff')">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="staffSubmitBtn">Save</button>
+      </div>
+      <p class="modal-status" id="staffModalStatus"></p>
+    </form>
+  </div>
+</div>
+
+<!-- ── Time Off Modal ── -->
+<div class="modal-overlay" id="modalTimeoff">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('timeoff')">&times;</button>
+    <h2>Add Time Off</h2>
+    <form id="timeoffForm" onsubmit="submitTimeoff(event)">
+      <div class="modal-form">
+        <label>Barber
+          <select required id="timeoffStaff">
+            <option value="">Select…</option>
+          </select>
+        </label>
+        <label>Reason
+          <input id="timeoffReason" type="text" placeholder="Holiday, sick day, etc." />
+        </label>
+        <label class="full">Start date &amp; time *
+          <input type="datetime-local" required id="timeoffStart" /></label>
+        <label class="full">End date &amp; time *
+          <input type="datetime-local" required id="timeoffEnd" /></label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('timeoff')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Time Off</button>
+      </div>
+      <p class="modal-status" id="timeoffStatus"></p>
     </form>
   </div>
 </div>
 
 <script>
-const PASSWORD = 'reset2026'; // v1 simple password — update in Vercel env vars
+// ─────────────────────────────────────────────────────────────────────────────
+// State
+// ─────────────────────────────────────────────────────────────────────────────
+var PASSWORD = ''; // set on successful login
 const state = {
-  view: 'daily',
-  date: new Date().toISOString().split('T')[0],
+  view: 'daily',           // diary: daily|weekly
+  date: new Date().toLocaleDateString('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-'),
+  appTab: 'diary',         // app-level: diary|settings
+  settingsTab: 'hours',    // settings sub-tabs: hours|timeoff|booking
+  staff: [],
+  services: [],
   bookings: [],
   capacity: null,
-  staff: [],
-  services: []
+  // hours editor
+  hours: {},               // { staffId: { [dayOfWeek]: { enabled, start, end, breakStart, breakEnd } } }
+  // time-off
+  timeoff: [],
+  // manual booking
+  selectedCustomer: null,  // { id, name, email, mobile, is_blocked }
+  selectedSlot: null,      // { time, staff_id, duration_mins }
+  selectedService: null,
+  selectedStaff: null,
+  walkinStep: 1
 };
 
-function checkPassword() {
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Auth — password is validated server-side on first API call
+// ─────────────────────────────────────────────────────────────────────────────
+let passwordVerified = false;
+
+async function checkPassword() {
   const pw = document.getElementById('gatePassword').value;
-  if (pw === PASSWORD) {
-    document.getElementById('gate').style.display = 'none';
-    document.getElementById('diaryApp').style.display = 'block';
-    loadDiary();
-  } else {
+  if (!pw) return;
+  // Try a lightweight API call to validate the password
+  try {
+    const res = await fetch('/api/staff', {
+      headers: { 'X-Diary-Password': pw }
+    });
+    if (res.ok) {
+      PASSWORD = pw; // set the global so subsequent calls use it
+      document.getElementById('gate').style.display = 'none';
+      document.getElementById('app').classList.add('open');
+      passwordVerified = true;
+      loadStaffAndServices();
+      loadDiary();
+    } else {
+      document.getElementById('gateError').style.display = 'block';
+    }
+  } catch (_) {
     document.getElementById('gateError').style.display = 'block';
   }
 }
 
 function logout() {
-  document.getElementById('diaryApp').style.display = 'none';
+  document.getElementById('app').classList.remove('open');
   document.getElementById('gate').style.display = 'flex';
   document.getElementById('gatePassword').value = '';
   document.getElementById('gateError').style.display = 'none';
+}
+
+document.getElementById('gatePassword')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') checkPassword();
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tab navigation
+// ─────────────────────────────────────────────────────────────────────────────
+function switchAppTab(tab) {
+  state.appTab = tab;
+  document.getElementById('tabDiary').classList.toggle('active', tab === 'diary');
+  document.getElementById('tabSettings').classList.toggle('active', tab === 'settings');
+  document.getElementById('viewDiary').classList.toggle('active', tab === 'diary');
+  document.getElementById('viewSettings').classList.toggle('active', tab === 'settings');
+  if (tab === 'settings') loadSettings();
+}
+
+function switchSettingsTab(tab) {
+  state.settingsTab = tab;
+  ['staff','hours','timeoff','booking'].forEach(t => {
+    const tabEl = document.getElementById('stTab' + capitalize(t));
+    if (tabEl) tabEl.classList.toggle('active', t === tab);
+    const viewEl = document.getElementById('settings' + capitalize(t));
+    if (viewEl) viewEl.style.display = t === tab ? 'block' : 'none';
+  });
+  if (tab === 'staff') loadStaff();
+  if (tab === 'hours') loadStaffHours();
+  if (tab === 'timeoff') loadTimeoff();
+  if (tab === 'booking') loadRecentManualBookings();
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// Alias for diary.html compat
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Staff & services
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadStaffAndServices() {
+  try {
+    const res = await fetch('/api/staff', {
+      headers: { 'X-Diary-Password': PASSWORD }
+    });
+    const data = await res.json();
+    state.staff = data.staff || [];
+    state.services = data.services || [];
+    state.durations = data.durations || [];
+    populateStaffServiceDropdowns();
+  } catch (e) { console.error(e); }
+}
+
+function populateStaffServiceDropdowns() {
+  // Walk-in service select
+  const svcSel = document.getElementById('walkinService');
+  if (svcSel) {
+    svcSel.innerHTML = '<option value="">Select service…</option>' +
+      state.services.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  }
+  // Walk-in staff select
+  const staffSel = document.getElementById('walkinStaff');
+  if (staffSel) {
+    staffSel.innerHTML = '<option value="">Select barber…</option>' +
+      state.staff.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  }
+  // Time-off staff select
+  const toStaffSel = document.getElementById('timeoffStaff');
+  if (toStaffSel) {
+    toStaffSel.innerHTML = '<option value="">Select…</option>' +
+      state.staff.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Diary — date nav & view toggle
+// ─────────────────────────────────────────────────────────────────────────────
+function navigateDate(dir) {
+  const d = new Date(state.date + 'T00:00:00');
+  if (state.view === 'weekly') d.setDate(d.getDate() + dir * 7);
+  else d.setDate(d.getDate() + dir);
+  state.date = d.toISOString().split('T')[0];
+  loadDiary();
 }
 
 function setView(v) {
@@ -254,17 +646,6 @@ function setView(v) {
   document.getElementById('dailyView').style.display = v === 'daily' ? 'block' : 'none';
   document.getElementById('weeklyView').style.display = v === 'weekly' ? 'block' : 'none';
   document.getElementById('capacityBar').style.display = v === 'weekly' ? 'flex' : 'none';
-  loadDiary();
-}
-
-function navigateDate(dir) {
-  const d = new Date(state.date);
-  if (state.view === 'weekly') {
-    d.setDate(d.getDate() + (dir * 7));
-  } else {
-    d.setDate(d.getDate() + dir);
-  }
-  state.date = d.toISOString().split('T')[0];
   loadDiary();
 }
 
@@ -280,9 +661,11 @@ function formatTime(isoStr) {
   return new Date(isoStr).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Load diary
+// ─────────────────────────────────────────────────────────────────────────────
 async function loadDiary() {
-  const label = document.getElementById('dateLabel');
-  label.textContent = formatDate(state.date);
+  document.getElementById('dateLabel').textContent = formatDate(state.date);
 
   if (state.view === 'daily') {
     document.getElementById('loadingDaily').style.display = 'block';
@@ -300,47 +683,35 @@ async function loadDiary() {
     const data = await res.json();
     state.bookings = data.bookings || [];
     state.capacity = data.capacity;
-
-    if (state.view === 'daily') {
-      renderDaily();
-    } else {
-      renderWeekly();
-    }
+    if (state.view === 'daily') renderDaily();
+    else renderWeekly();
   } catch (err) {
     console.error(err);
-    if (state.view === 'daily') {
-      document.getElementById('loadingDaily').textContent = 'Failed to load. Refresh to try again.';
-    }
+    if (state.view === 'daily') document.getElementById('loadingDaily').textContent = 'Failed to load.';
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Render daily
+// ─────────────────────────────────────────────────────────────────────────────
 function renderDaily() {
   document.getElementById('loadingDaily').style.display = 'none';
   const list = document.getElementById('bookingsList');
   const empty = document.getElementById('emptyDaily');
-
-  if (state.bookings.length === 0) {
+  if (!state.bookings.length) {
     list.style.display = 'none';
     empty.style.display = 'block';
     return;
   }
-
   empty.style.display = 'none';
   list.style.display = 'flex';
-
-  list.innerHTML = state.bookings.map(b => {
-    const apptTime = new Date(b.start).getTime();
-    const now = Date.now();
-    const minsUntil = Math.round((apptTime - now) / 60000);
-    const isPast = now > apptTime;
-
-    return `
+  list.innerHTML = state.bookings.map(b => `
     <div class="booking-card">
       <div>
         <div class="booking-card-header">
           <span class="booking-card-time">${formatTime(b.start)}</span>
           <span class="status-badge ${b.status}">${b.status.replace('_',' ')}</span>
-          <span class="booking-card-source ${b.is_recurring ? 'recurring' : ''}">${b.is_recurring ? b.recurring_interval : 'online'}</span>
+          <span class="booking-card-source ${b.is_recurring ? '' : 'walk_in'}">${b.is_recurring ? b.recurring_interval : (b.source || 'online')}</span>
         </div>
         <div class="booking-card-customer">${b.customer_name || 'Unknown'}</div>
         <div class="booking-card-service">${b.service_name}</div>
@@ -358,58 +729,49 @@ function renderDaily() {
           <button class="btn btn-small btn-ghost" onclick="cancelBooking('${b.id}')">Cancel</button>
         ` : ''}
       </div>
-    </div>
-  `}).join('');
+    </div>`).join('');
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Render weekly
+// ─────────────────────────────────────────────────────────────────────────────
 function renderWeekly() {
   document.getElementById('loadingWeekly').style.display = 'none';
-
-  // Update capacity bar
   if (state.capacity !== null) {
     document.getElementById('capacityFill').style.width = state.capacity + '%';
     document.getElementById('capacityPct').textContent = state.capacity + '%';
   }
-
-  // Get week starting Sunday
-  const currentDate = new Date(state.date);
-  const dayOfWeek = currentDate.getDay();
-  const weekStart = new Date(currentDate);
-  weekStart.setDate(currentDate.getDate() - dayOfWeek);
-
+  const cur = new Date(state.date);
+  const dow = cur.getDay();
+  const weekStart = new Date(cur); weekStart.setDate(cur.getDate() - dow);
   const days = [];
   for (let i = 0; i < 7; i++) {
-    const d = new Date(weekStart);
-    d.setDate(weekStart.getDate() + i);
+    const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
     days.push(d.toISOString().split('T')[0]);
   }
-
-  const today = new Date().toISOString().split('T')[0];
-
+  const today = new Date().toLocaleDateString('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
   document.getElementById('weekGrid').innerHTML = days.map(day => {
-    const dayBookings = state.bookings.filter(b => b.start.startsWith(day));
-    const dayName = new Date(day + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short' });
-    const dayNum = new Date(day + 'T00:00:00').getDate();
-    const isToday = day === today;
-
+    const dayBks = state.bookings.filter(b => b.start.startsWith(day));
+    const d = new Date(day + 'T00:00:00');
     return `
-    <div class="week-day${isToday ? ' is-today' : ''}">
+    <div class="week-day${day === today ? ' is-today' : ''}">
       <div class="week-day-header">
-        <span class="week-day-name">${dayName}</span>
-        <span class="week-day-date">${dayNum}</span>
+        <span class="week-day-name">${DAYS[d.getDay()]}</span>
+        <span class="week-day-date">${d.getDate()}</span>
       </div>
-      ${dayBookings.length === 0 ? '<span class="week-day-count">No bookings</span>' : ''}
-      ${dayBookings.slice(0, 4).map(b => `
+      ${!dayBks.length ? '<span class="week-day-count">—</span>' : ''}
+      ${dayBks.slice(0, 4).map(b => `
         <div class="week-slot" title="${b.customer_name} — ${b.service_name}">
-          <span class="customer-name">${formatTime(b.start)}</span><br/>
-          ${b.customer_name} — ${b.service_name}
-        </div>
-      `).join('')}
-      ${dayBookings.length > 4 ? `<div class="week-day-count">+${dayBookings.length - 4} more</div>` : ''}
-    </div>
-  `}).join('');
+          <span class="customer-name">${formatTime(b.start)}</span><br/>${b.customer_name} — ${b.service_name}
+        </div>`).join('')}
+      ${dayBks.length > 4 ? `<div class="week-day-count">+${dayBks.length - 4} more</div>` : ''}
+    </div>`;
+  }).join('');
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Attendance
+// ─────────────────────────────────────────────────────────────────────────────
 async function markAttendance(bookingId, status) {
   if (!confirm(`Mark as ${status.replace('_',' ')}?`)) return;
   try {
@@ -419,12 +781,12 @@ async function markAttendance(bookingId, status) {
       body: JSON.stringify({ booking_id: bookingId, status })
     });
     if (res.ok) loadDiary();
-    else alert('Failed to update. Try again.');
+    else alert('Failed. Try again.');
   } catch (_) { alert('Error. Try again.'); }
 }
 
 async function cancelBooking(bookingId) {
-  const reason = prompt('Reason for cancellation (optional):');
+  const reason = prompt('Reason (optional):');
   try {
     const res = await fetch('/api/attendance', {
       method: 'POST',
@@ -432,87 +794,649 @@ async function cancelBooking(bookingId) {
       body: JSON.stringify({ booking_id: bookingId, status: 'cancelled', cancellation_reason: reason || null })
     });
     if (res.ok) loadDiary();
-    else alert('Failed to cancel. Try again.');
+    else alert('Failed. Try again.');
   } catch (_) { alert('Error. Try again.'); }
 }
 
-function openWalkinModal() {
-  document.getElementById('walkinModal').classList.add('open');
-  document.getElementById('walkinDate').value = state.date;
-  document.getElementById('walkinStatus').textContent = '';
-  // Load staff and services
-  if (state.staff.length === 0) {
-    fetch('/api/diary?date=' + state.date + '&view=daily', { headers: { 'X-Diary-Password': PASSWORD } })
-      .then(r => r.json())
-      .then(data => {
-        // We need to get staff/services from somewhere — use a simple approach
-        // Hardcode for now since no dedicated endpoint
-        document.getElementById('walkinStaff').innerHTML = `
-          <option value="">Select…</option>
-          <option value="staff-jack">Jack</option>
-          <option value="staff-jaden">Jaden</option>
-        `;
-        document.getElementById('walkinService').innerHTML = `
-          <option value="">Select…</option>
-          <option value="svc-1">Haircut</option>
-          <option value="svc-2">Hair + Beard</option>
-          <option value="svc-3">Beard Only</option>
-          <option value="svc-4">Kids Cut</option>
-          <option value="svc-5">Cut-Throat Shave</option>
-          <option value="svc-6">Haircut + Cut-Throat</option>
-        `;
-      });
+// ─────────────────────────────────────────────────────────────────────────────
+// Settings — Staff Hours
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadSettings() {
+  switchSettingsTab(state.settingsTab);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Settings — Staff management
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadStaff() {
+  const list = document.getElementById('staffList');
+  if (!list) return;
+  list.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const res = await fetch('/api/staff', {
+      headers: { 'X-Diary-Password': PASSWORD }
+    });
+    const data = await res.json();
+    state.staff = data.staff || [];
+    state.services = data.services || [];
+    state.durations = data.durations || [];
+    renderStaff();
+  } catch (e) {
+    list.innerHTML = '<p style="color:var(--red);">Failed to load. Refresh to try again.</p>';
   }
 }
 
-function closeWalkinModal() {
-  document.getElementById('walkinModal').classList.remove('open');
+function renderStaff() {
+  const list = document.getElementById('staffList');
+  if (!state.staff.length) {
+    list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;">No staff yet. Add your first barber above.</p>';
+    return;
+  }
+  list.innerHTML = `
+    <div class="staff-grid">
+      ${state.staff.map(s => {
+        const initials = s.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+        const staffDurations = (state.durations || []).filter(d => d.staff_id === s.id);
+        const inactive = !s.is_active ? 'inactive' : '';
+        return `
+        <div class="staff-card ${inactive}">
+          <div class="staff-card-header">
+            <div class="staff-card-avatar">${initials}</div>
+            <div class="staff-card-info">
+              <div class="staff-card-name">${s.name}</div>
+              <div class="staff-card-role">${s.role} ${!s.is_active ? '· INACTIVE' : ''}</div>
+            </div>
+          </div>
+          ${s.bio ? `<div class="staff-card-bio">${s.bio}</div>` : ''}
+          <div class="durations-section">
+            <div class="durations-title">Service Durations</div>
+            <div class="durations-grid">
+              ${state.services.map(svc => {
+                const dur = staffDurations.find(d => d.service_id === svc.id);
+                return `
+                <div class="duration-row">
+                  <span>${svc.name}</span>
+                  <input type="number" min="5" max="180" value="${dur?.duration_mins || 30}"
+                    onchange="updateDur('${s.id}','${svc.id}',this.value)" title="Duration in minutes" />
+                  <span style="color:var(--muted);font-size:11px;">min</span>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+          <div class="staff-card-actions">
+            <button class="btn btn-primary btn-small" onclick="openStaffModal('${s.id}')">Edit</button>
+            ${s.is_active ? `
+              <button class="btn btn-danger btn-small" onclick="deactivateStaff('${s.id}')">Deactivate</button>
+            ` : `
+              <button class="btn btn-small" style="border-color:var(--green);color:var(--green)" onclick="activateStaff('${s.id}')">Reactivate</button>
+            `}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
 }
 
-document.getElementById('walkinForm')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const fd = new FormData(e.target);
-  const date = fd.get('date');
-  const time = fd.get('time');
-  const statusEl = document.getElementById('walkinStatus');
+let durationsDirty = {};
 
-  if (!date || !time) { statusEl.textContent = 'Date and time required.'; return; }
+function updateDur(staffId, serviceId, val) {
+  if (!durationsDirty[staffId]) durationsDirty[staffId] = {};
+  durationsDirty[staffId][serviceId] = Number(val);
+}
 
-  statusEl.textContent = 'Adding walk-in…';
+async function saveDurations(staffId) {
+  const map = durationsDirty[staffId];
+  if (!map) return;
+  const durations = Object.entries(map).map(([service_id, duration_mins]) => ({ service_id, duration_mins }));
   try {
-    const res = await fetch('/api/walkin', {
+    await adminAction('set_service_durations', { staff_id: staffId, durations });
+    delete durationsDirty[staffId];
+    // Reload durations
+    const res = await fetch('/api/staff', { headers: { 'X-Diary-Password': PASSWORD } });
+    const data = await res.json();
+    state.durations = data.durations || [];
+    renderStaff();
+  } catch (e) { alert('Failed to save durations.'); }
+}
+
+function openStaffModal(staffId) {
+  const staff = staffId ? state.staff.find(s => s.id === staffId) : null;
+  document.getElementById('staffModalTitle').textContent = staff ? 'Edit Barber' : 'Add Barber';
+  document.getElementById('staffName').value = staff?.name || '';
+  document.getElementById('staffRole').value = staff?.role || '';
+  document.getElementById('staffBio').value = staff?.bio || '';
+  document.getElementById('staffEditId').value = staffId || '';
+  document.getElementById('staffModalStatus').textContent = '';
+  document.getElementById('staffModalStatus').className = 'modal-status';
+  document.getElementById('deleteStaffBtn').style.display = staff && staff.is_active ? 'inline-flex' : 'none';
+  document.getElementById('modalStaff').classList.add('open');
+}
+
+function closeStaffModal() { document.getElementById('modalStaff').classList.remove('open'); }
+
+async function submitStaff(e) {
+  e.preventDefault();
+  const status = document.getElementById('staffModalStatus');
+  status.textContent = '';
+  status.className = 'modal-status';
+  const id = document.getElementById('staffEditId').value;
+  const name = document.getElementById('staffName').value.trim();
+  const role = document.getElementById('staffRole').value.trim();
+  const bio = document.getElementById('staffBio').value.trim();
+  if (!name || !role) { status.textContent = 'Name and role are required.'; status.classList.add('error'); return; }
+  status.textContent = 'Saving…';
+  try {
+    if (id) {
+      await adminAction('update_staff', { id, name, role, bio });
+    } else {
+      await adminAction('create_staff', { name, role, bio });
+    }
+    status.textContent = 'Saved successfully.';
+    status.classList.add('ok');
+    setTimeout(() => { closeStaffModal(); loadStaff(); }, 1000);
+  } catch (err) {
+    status.textContent = 'Failed to save. Try again.';
+    status.classList.add('error');
+  }
+}
+
+async function deleteStaff() {
+  const id = document.getElementById('staffEditId').value;
+  if (!id) return;
+  if (!confirm('Deactivate this barber? They will be hidden from the booking system.')) return;
+  try {
+    await adminAction('delete_staff', { id });
+    closeStaffModal();
+    loadStaff();
+  } catch (e) { alert('Failed. Try again.'); }
+}
+
+async function deactivateStaff(id) {
+  if (!confirm('Deactivate this barber?')) return;
+  try {
+    await adminAction('delete_staff', { id });
+    loadStaff();
+  } catch (e) { alert('Failed.'); }
+}
+
+async function activateStaff(id) {
+  try {
+    await adminAction('update_staff', { id, is_active: true });
+    loadStaff();
+  } catch (e) { alert('Failed.'); }
+}
+
+async function loadStaffHours() {
+  const list = document.getElementById('staffHoursList');
+  list.innerHTML = '<div class="loading">Loading…</div>';
+  state.hours = {};
+
+  // Load availability for each staff member
+  const allAvail = {};
+  for (const s of state.staff) {
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+        body: JSON.stringify({ action: 'get_availability', staff_id: s.id })
+      });
+      const data = await res.json();
+      allAvail[s.id] = data.availability || [];
+    } catch (e) { allAvail[s.id] = []; }
+  }
+
+  list.innerHTML = state.staff.map(staff => {
+    const avail = allAvail[staff.id] || [];
+    const availByDay = {};
+    avail.forEach(a => { availByDay[a.day_of_week] = a; });
+
+    // Build rows Mon-Sat (1-6), Sunday (0)
+    const rows = [1,2,3,4,5,6,0].map(d => {
+      const a = availByDay[d];
+      return `
+      <div class="hours-day-cell ${!a ? 'off' : ''}" id="hcell-${staff.id}-${d}">
+        <input type="checkbox" class="hours-toggle" id="hcheck-${staff.id}-${d}"
+          ${a ? 'checked' : ''}
+          onchange="toggleDay('${staff.id}',${d})" />
+        <span style="font-size:10px;font-weight:700;color:${a ? 'var(--gold2)' : 'var(--muted)'};text-align:center;min-width:36px;">${DAYS[d]}</span>
+        <div class="hours-break-row">
+          <span class="hours-break-label">Work</span>
+          <div style="display:flex;gap:4px;">
+            <input type="time" class="hours-time-input" id="hstart-${staff.id}-${d}"
+              value="${a ? a.start_time : '09:00'}"
+              ${!a ? 'disabled' : ''}
+              onchange="setHours('${staff.id}',${d})" style="width:64px;" />
+            <input type="time" class="hours-time-input" id="hend-${staff.id}-${d}"
+              value="${a ? a.end_time : '18:00'}"
+              ${!a ? 'disabled' : ''}
+              onchange="setHours('${staff.id}',${d})" style="width:64px;" />
+          </div>
+          <span class="hours-break-label">Break</span>
+          <div class="hours-break-inputs">
+            <input type="time" id="hbstart-${staff.id}-${d}" value="${a?.break_start || '13:00'}" ${!a ? 'disabled' : ''} onchange="setHours('${staff.id}',${d})" title="Break start" />
+            <input type="time" id="hbend-${staff.id}-${d}" value="${a?.break_end || '13:30'}" ${!a ? 'disabled' : ''} onchange="setHours('${staff.id}',${d})" title="Break end" />
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `
+    <div class="staff-hours-card">
+      <h3>${staff.name} <span style="color:var(--muted);font-size:13px;font-weight:400;text-transform:none;">— ${staff.role}</span></h3>
+      <div class="hours-grid">${rows}</div>
+      <div class="hours-actions">
+        <button class="btn btn-primary btn-small" onclick="saveAllHours('${staff.id}')">Save hours</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDay(staffId, day) {
+  const checked = document.getElementById(`hcheck-${staffId}-${day}`).checked;
+  const inputs = ['hstart','hend','hbstart','hbend'].map(pre => document.getElementById(`${pre}-${staffId}-${day}`));
+  inputs.forEach(inp => { if (inp) inp.disabled = !checked; });
+  document.getElementById(`hcell-${staffId}-${day}`)?.classList.toggle('off', !checked);
+}
+
+async function setHours(staffId, day) {
+  // Auto-save on change
+  await saveHours(staffId, day, false);
+}
+
+async function saveHours(staffId, day, showFeedback = true) {
+  const checked = document.getElementById(`hcheck-${staffId}-${day}`)?.checked;
+  const startTime = document.getElementById(`hstart-${staffId}-${day}`)?.value;
+  const endTime = document.getElementById(`hend-${staffId}-${day}`)?.value;
+  const breakStart = document.getElementById(`hbstart-${staffId}-${day}`)?.value;
+  const breakEnd = document.getElementById(`hbend-${staffId}-${day}`)?.value;
+
+  if (checked && startTime && endTime) {
+    await adminAction('set_availability', {
+      staff_id: staffId,
+      day_of_week: day,
+      start_time: startTime,
+      end_time: endTime,
+      break_start: breakStart || null,
+      break_end: breakEnd || null
+    });
+  } else if (!checked) {
+    // Remove availability for this day
+    await adminAction('remove_availability_for_day', {
+      staff_id: staffId,
+      day_of_week: day
+    });
+  }
+}
+
+async function saveAllHours(staffId) {
+  for (let d = 0; d <= 6; d++) {
+    await saveHours(staffId, d, false);
+  }
+  alert('Hours saved for ' + (state.staff.find(s => s.id === staffId)?.name || staffId));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Settings — Time Off
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadTimeoff() {
+  const list = document.getElementById('timeoffList');
+  list.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const res = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+      body: JSON.stringify({ action: 'get_timeoff' })
+    });
+    const data = await res.json();
+    state.timeoff = data.timeoff || [];
+    if (!state.timeoff.length) {
+      list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;">No upcoming time off scheduled.</p>';
+      return;
+    }
+    // Enrich with staff names
+    const enriched = state.timeoff.map(to => ({
+      ...to,
+      staff_name: state.staff.find(s => s.id === to.staff_id)?.name || 'Unknown'
+    }));
+    list.innerHTML = `
+      <div class="timeoff-list">
+        ${enriched.map(to => `
+        <div class="timeoff-item">
+          <div class="timeoff-item-left">
+            <div class="timeoff-item-dates">${formatDate(to.start_datetime.split('T')[0])} — ${formatDate(to.end_datetime.split('T')[0])}</div>
+            <div class="timeoff-item-staff">${to.staff_name}</div>
+            ${to.reason ? `<div class="timeoff-item-reason">${to.reason}</div>` : ''}
+          </div>
+          <button class="btn btn-danger btn-small" onclick="removeTimeoff('${to.id}')">Remove</button>
+        </div>`).join('')}
+      </div>`;
+  } catch (e) {
+    list.innerHTML = '<p style="color:var(--red);">Failed to load time off.</p>';
+  }
+}
+
+async function submitTimeoff(e) {
+  e.preventDefault();
+  const status = document.getElementById('timeoffStatus');
+  status.textContent = '';
+  status.className = 'modal-status';
+  const staffId = document.getElementById('timeoffStaff').value;
+  const start = document.getElementById('timeoffStart').value;
+  const end = document.getElementById('timeoffEnd').value;
+  const reason = document.getElementById('timeoffReason').value;
+  if (!staffId || !start || !end) { status.textContent = 'Fill in all required fields.'; status.classList.add('error'); return; }
+  status.textContent = 'Saving…';
+  try {
+    await adminAction('add_timeoff', { staff_id: staffId, start_datetime: start, end_datetime: end, reason });
+    status.textContent = 'Time off added.';
+    status.classList.add('ok');
+    document.getElementById('timeoffForm').reset();
+    loadTimeoff();
+    setTimeout(() => closeModal('timeoff'), 1200);
+  } catch (e) {
+    status.textContent = 'Failed. Try again.';
+    status.classList.add('error');
+  }
+}
+
+async function removeTimeoff(id) {
+  if (!confirm('Remove this time off?')) return;
+  await adminAction('remove_timeoff', { id });
+  loadTimeoff();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Recent manual bookings (settings > bookings)
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadRecentManualBookings() {
+  const container = document.getElementById('recentManualBookings');
+  container.innerHTML = '<div class="loading">Loading…</div>';
+  // Load bookings from last 14 days
+  try {
+    const endDate = new Date();
+    const startDate = new Date(); startDate.setDate(startDate.getDate() - 14);
+    const res = await fetch(`/api/diary?date=${startDate.toISOString().split('T')[0]}&view=weekly`, {
+      headers: { 'X-Diary-Password': PASSWORD }
+    });
+    const data = await res.json();
+    const manualBookings = (data.bookings || []).filter(b => b.source === 'online'); // show all for now
+    container.innerHTML = `<p style="color:var(--muted);font-size:13px;margin:0 0 16px;">Showing bookings from the last 14 days. Use the diary view above for full management.</p>`;
+  } catch (e) {
+    container.innerHTML = '<p style="color:var(--red);">Failed to load.</p>';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Manual booking modal — step flow
+// ─────────────────────────────────────────────────────────────────────────────
+function openModal(type) {
+  document.getElementById('modal' + capitalize(type))?.classList.add('open');
+  if (type === 'walkin') {
+    resetWalkinForm();
+    populateStaffServiceDropdowns();
+  }
+  if (type === 'timeoff') {
+    document.getElementById('timeoffStatus').textContent = '';
+    document.getElementById('timeoffForm').reset();
+    populateStaffServiceDropdowns();
+  }
+  if (type === 'staff') openStaffModal(null);
+}
+
+function closeModal(type) {
+  document.getElementById('modal' + capitalize(type))?.classList.remove('open');
+  if (type === 'staff') closeStaffModal();
+}
+
+function resetWalkinForm() {
+  state.selectedCustomer = null;
+  state.selectedSlot = null;
+  state.selectedService = null;
+  state.selectedStaff = null;
+  state.walkinStep = 1;
+  document.getElementById('walkinService').value = '';
+  document.getElementById('walkinStaff').value = '';
+  document.getElementById('walkinDuration').value = '';
+  document.getElementById('walkinDate').value = '';
+  document.getElementById('walkinSlot').innerHTML = '<option value="">Select a slot…</option>';
+  document.getElementById('walkinCustomerSearch').value = '';
+  document.getElementById('customerSearchResults').innerHTML = '';
+  document.getElementById('walkinCustName').value = '';
+  document.getElementById('walkinCustEmail').value = '';
+  document.getElementById('walkinCustMobile').value = '';
+  document.getElementById('walkinBlockedMsg').style.display = 'none';
+  document.getElementById('walkinStatus').textContent = '';
+  showWalkinStep(1);
+}
+
+function showWalkinStep(n) {
+  document.getElementById('walkinStep1').style.display = n === 1 ? 'block' : 'none';
+  document.getElementById('walkinStep2').style.display = n === 2 ? 'block' : 'none';
+  document.getElementById('walkinStep3').style.display = n === 3 ? 'block' : 'none';
+  state.walkinStep = n;
+}
+
+function onWalkinServiceChange() {
+  const serviceId = document.getElementById('walkinService').value;
+  const staffId = document.getElementById('walkinStaff').value;
+  updateDurationDisplay(serviceId, staffId);
+}
+
+function onWalkinStaffChange() {
+  const serviceId = document.getElementById('walkinService').value;
+  const staffId = document.getElementById('walkinStaff').value;
+  updateDurationDisplay(serviceId, staffId);
+  // Clear slot if staff changes
+  document.getElementById('walkinSlot').innerHTML = '<option value="">Select a slot…</option>';
+  state.selectedSlot = null;
+  document.getElementById('walkinStep2NextBtn').disabled = true;
+}
+
+function updateDurationDisplay(serviceId, staffId) {
+  const durInput = document.getElementById('walkinDuration');
+  if (!serviceId || !staffId) { durInput.value = ''; return; }
+  // Look up from loaded data
+  const dur = getDuration(serviceId, staffId);
+  durInput.value = dur ? `${dur} mins` : '';
+}
+
+function getDuration(serviceId, staffId) {
+  // We don't have durations loaded — we'll get it from the availability response
+  return null;
+}
+
+function walkinStep1Next() {
+  const svc = document.getElementById('walkinService').value;
+  const staff = document.getElementById('walkinStaff').value;
+  if (!svc || !staff) { alert('Select a service and barber.'); return; }
+  state.selectedService = svc;
+  state.selectedStaff = staff;
+  // Set today's date as default
+  document.getElementById('walkinDate').value = new Date().toLocaleDateString('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
+  showWalkinStep(2);
+  onWalkinDateChange();
+}
+
+function walkinStep2Back() { showWalkinStep(1); }
+
+async function onWalkinDateChange() {
+  const date = document.getElementById('walkinDate').value;
+  const serviceId = document.getElementById('walkinService').value;
+  const staffId = document.getElementById('walkinStaff').value;
+  const slotSel = document.getElementById('walkinSlot');
+  const loading = document.getElementById('walkinSlotLoading');
+  const error = document.getElementById('walkinSlotError');
+
+  if (!date || !serviceId || !staffId) return;
+  slotSel.innerHTML = '<option value="">Select a slot…</option>';
+  loading.style.display = 'block';
+  error.style.display = 'none';
+
+  try {
+    const res = await fetch(`/api/availability?date=${date}&staff_id=${staffId}&service_id=${serviceId}`, {
+      headers: { 'X-Diary-Password': PASSWORD }
+    });
+    const data = await res.json();
+    loading.style.display = 'none';
+    const slots = data.slots || [];
+    if (!slots.length) { error.style.display = 'block'; return; }
+    // Get duration for label
+    const dur = slots[0]?.duration_mins || 30;
+    slots.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = JSON.stringify(s);
+      opt.textContent = `${s.time} — ${s.duration_mins || dur} min`;
+      slotSel.appendChild(opt);
+    });
+    document.getElementById('walkinDuration').value = `${dur} mins`;
+  } catch (e) {
+    loading.style.display = 'none';
+    error.style.display = 'block';
+  }
+}
+
+function walkinStep2Next() {
+  if (!state.selectedSlot) { alert('Select a time slot.'); return; }
+  showWalkinStep(3);
+}
+
+function onWalkinSlotChange() {
+  const slotVal = document.getElementById('walkinSlot').value;
+  if (!slotVal) {
+    state.selectedSlot = null;
+    document.getElementById('walkinStep2NextBtn').disabled = true;
+    return;
+  }
+  state.selectedSlot = JSON.parse(slotVal);
+  document.getElementById('walkinStep2NextBtn').disabled = false;
+}
+
+function walkinStep3Back() { showWalkinStep(2); }
+
+// Customer search
+let customerSearchTimer = null;
+function searchCustomer(q) {
+  clearTimeout(customerSearchTimer);
+  if (q.length < 2) {
+    document.getElementById('customerSearchResults').innerHTML = '';
+    return;
+  }
+  customerSearchTimer = setTimeout(async () => {
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+        body: JSON.stringify({ action: 'search_customers', q })
+      });
+      const data = await res.json();
+      const results = document.getElementById('customerSearchResults');
+      if (!data.customers?.length) { results.innerHTML = ''; return; }
+      results.innerHTML = data.customers.map(c => `
+        <div class="customer-result ${state.selectedCustomer?.id === c.id ? 'selected' : ''}" onclick="selectCustomer(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+          <div>
+            <div class="customer-result-name">${c.name} ${c.is_blocked ? '<span class="customer-result-blocked">BLOCKED</span>' : ''}</div>
+            <div class="customer-result-meta">${c.email}${c.mobile ? ' · ' + c.mobile : ''}</div>
+          </div>
+        </div>`).join('');
+    } catch (_) {}
+  }, 300);
+}
+
+function selectCustomer(c) {
+  state.selectedCustomer = c;
+  document.getElementById('walkinCustName').value = c.name;
+  document.getElementById('walkinCustEmail').value = c.email;
+  document.getElementById('walkinCustMobile').value = c.mobile || '';
+  document.getElementById('walkinBlockedMsg').style.display = c.is_blocked ? 'block' : 'none';
+  document.getElementById('walkinSubmitBtn').disabled = !!c.is_blocked;
+  document.getElementById('customerSearchResults').innerHTML = '';
+}
+
+async function submitWalkin(e) {
+  e.preventDefault();
+  const status = document.getElementById('walkinStatus');
+  status.textContent = '';
+  status.className = 'modal-status';
+
+  // Gather customer data
+  let customerName = document.getElementById('walkinCustName').value.trim();
+  let customerEmail = document.getElementById('walkinCustEmail').value.trim();
+  let customerMobile = document.getElementById('walkinCustMobile').value.trim();
+
+  if (!customerName || !customerEmail) {
+    status.textContent = 'Customer name and email are required.';
+    status.classList.add('error');
+    return;
+  }
+
+  // If selected existing customer is blocked, reject
+  if (state.selectedCustomer?.is_blocked) {
+    status.textContent = 'This customer is blocked. Unblock them first.';
+    status.classList.add('error');
+    return;
+  }
+
+  if (!state.selectedSlot) {
+    status.textContent = 'Please select a time slot.';
+    status.classList.add('error');
+    return;
+  }
+
+  const { time, staff_id, duration_mins } = state.selectedSlot;
+  const date = document.getElementById('walkinDate').value;
+  const startDatetime = `${date}T${time}:00`;
+
+  status.textContent = 'Adding booking…';
+  document.getElementById('walkinSubmitBtn').disabled = true;
+
+  try {
+    const res = await fetch('/api/admin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
       body: JSON.stringify({
-        customer_name: fd.get('customer_name'),
-        customer_mobile: fd.get('customer_mobile'),
-        service_id: fd.get('service_id'),
-        staff_id: fd.get('staff_id'),
-        start_datetime: `${date}T${time}:00`
+        action: 'add',
+        service_id: state.selectedService,
+        staff_id: staff_id || state.selectedStaff,
+        start_datetime: startDatetime,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        customer_mobile: customerMobile || null
       })
     });
     const data = await res.json();
     if (res.ok) {
-      statusEl.textContent = 'Walk-in added successfully.';
-      e.target.reset();
-      setTimeout(closeWalkinModal, 1200);
-      loadDiary();
+      status.textContent = 'Booking added successfully.';
+      status.classList.add('ok');
+      setTimeout(() => { closeModal('walkin'); loadDiary(); }, 1500);
     } else {
-      statusEl.textContent = data.error || 'Failed to add walk-in.';
+      status.textContent = data.error || 'Failed to add booking.';
+      status.classList.add('error');
+      document.getElementById('walkinSubmitBtn').disabled = false;
     }
   } catch (_) {
-    statusEl.textContent = 'Error. Try again.';
+    status.textContent = 'Error. Try again.';
+    status.classList.add('error');
+    document.getElementById('walkinSubmitBtn').disabled = false;
   }
-});
+}
 
-// Close modal on outside click
-document.getElementById('walkinModal')?.addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) closeWalkinModal();
-});
+// ─────────────────────────────────────────────────────────────────────────────
+// Utility
+// ─────────────────────────────────────────────────────────────────────────────
+async function adminAction(action, params) {
+  const res = await fetch('/api/admin', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+    body: JSON.stringify({ action, ...params })
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
 
-// Enter key on password
-document.getElementById('gatePassword')?.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') checkPassword();
+// Close modals on outside click
+['modalWalkin','modalTimeoff'].forEach(id => {
+  document.getElementById(id)?.addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeModal(id.replace('modal','').toLowerCase());
+  });
 });
 </script>
 </body>

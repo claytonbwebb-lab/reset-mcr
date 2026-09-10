@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { ukDateStartUtc, ukDateEndUtc } from './_ukTime.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -30,16 +31,16 @@ export default async function handler(req, res) {
 
     if (view === 'daily') {
       query = query
-        .gte('start_datetime', date + 'T00:00:00')
-        .lte('start_datetime', date + 'T23:59:59');
+        .gte('start_datetime', ukDateStartUtc(date))
+        .lte('start_datetime', ukDateEndUtc(date));
     } else if (view === 'weekly') {
-      const weekStart = new Date(date);
+      const weekStart = new Date(date + 'T00:00:00');
       weekStart.setDate(weekStart.getDate() - weekStart.getDay());
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekEnd.getDate() + 6);
       query = query
-        .gte('start_datetime', weekStart.toISOString().split('T')[0] + 'T00:00:00')
-        .lte('start_datetime', weekEnd.toISOString().split('T')[0] + 'T23:59:59');
+        .gte('start_datetime', ukDateStartUtc(weekStart.toISOString().split('T')[0]))
+        .lte('start_datetime', ukDateEndUtc(weekEnd.toISOString().split('T')[0]));
     }
 
     if (staff_id) {

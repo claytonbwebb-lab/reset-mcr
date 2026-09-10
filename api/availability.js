@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { ukDateStartUtc, ukDateEndUtc, ukToday } from './_ukTime.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -86,13 +87,15 @@ export default async function handler(req, res) {
       unavailableMap[sid] = unavail || [];
     }
 
-    // Get existing bookings for this date for relevant staff
+    // Get existing bookings for this date for relevant staff (query in UTC range)
+    const startUtc = ukDateStartUtc(date);
+    const endUtc = ukDateEndUtc(date);
     const { data: existingBookings } = await supabase
       .from('bookings')
       .select('staff_id, start_datetime, end_datetime, status')
       .in('staff_id', staffIds)
-      .gte('start_datetime', date + 'T00:00:00')
-      .lte('start_datetime', date + 'T23:59:59')
+      .gte('start_datetime', startUtc)
+      .lte('start_datetime', endUtc)
       .neq('status', 'cancelled');
 
     // Generate available slots for each staff
@@ -145,10 +148,13 @@ export default async function handler(req, res) {
         }
         if (booked) continue;
 
-        // Past time check (only for today)
-        const now = new Date();
-        const slotDateTimeFull = new Date(`${date}T${minsToTime(slotStart)}:00`);
-        if (slotDateTimeFull <= now) continue;
+        // Past time check (only for today) — compare in UK timezone
+        const todayStr = ukToday();
+        if (date === todayStr) {
+          const nowUk = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: false });
+          const slotUk = new Date(`${date}T${minsToTime(slotStart)}:00`).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: false });
+          if (slotUk <= nowUk) continue;
+        }
 
         allSlots.push({
           time: minsToTime(slotStart),

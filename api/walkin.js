@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { ukLocalToUtcIso } from './_ukTime.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -39,7 +40,7 @@ export default async function handler(req, res) {
       .single();
 
     const durationMins = durationRow?.duration_mins || 30;
-    const startDate = new Date(start_datetime);
+    const startDate = new Date(ukLocalToUtcIso(start_datetime));
     const endDate = new Date(startDate.getTime() + durationMins * 60000);
 
     // Upsert customer (no email for walk-ins)

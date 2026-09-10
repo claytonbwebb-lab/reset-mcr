@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { Resend } from 'resend';
+import { ukLocalToUtcIso } from './_ukTime.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -11,14 +12,19 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = 'hello@resetmcr.com';
 const JACK_EMAIL = process.env.JACK_EMAIL || 'hello@resetmcr.com';
 
+// All datetimes are stored and received as UTC ISO strings.
+// Formatting converts to UK local time for display.
 function formatDate(dateStr) {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  return new Date(dateStr).toLocaleDateString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    timeZone: 'Europe/London'
+  });
 }
-
 function formatTime(dateStr) {
-  const d = new Date(dateStr);
-  return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+  return new Date(dateStr).toLocaleTimeString('en-GB', {
+    hour: '2-digit', minute: '2-digit', hour12: false,
+    timeZone: 'Europe/London'
+  });
 }
 
 async function sendCustomerConfirmation(booking, customer, service, staffMember) {
@@ -130,8 +136,23 @@ export default async function handler(req, res) {
     }
 
     const durationMins = durationRow.duration_mins;
-    const startDate = new Date(start_datetime);
+    const startDate = new Date(ukLocalToUtcIso(start_datetime)); // Convert UK local to UTC
     const endDate = new Date(startDate.getTime() + durationMins * 60000);
+
+    // Conflict check — detect any overlapping booking for this staff
+    const { data: existingBooking } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('staff_id', staff_id)
+      .neq('status', 'cancelled')
+      .lt('start_datetime', endDate.toISOString())      // existing starts before new ends
+      .gt('end_datetime', startDate.toISOString())        // existing ends after new starts
+      .limit(1)
+      .maybeSingle();
+
+    if (existingBooking) {
+      return res.status(409).json({ error: 'This slot is already booked.' });
+    }
 
     // Insert booking
     const { data: booking, error: bookingError } = await supabase
