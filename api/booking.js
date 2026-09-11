@@ -107,6 +107,21 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // Handle "Any Available" staff selection
+    let resolvedStaffId = staff_id;
+    if (staff_id === 'any') {
+      const { data: availableStaff } = await supabase
+        .from('staff')
+        .select('id')
+        .eq('is_active', true)
+        .order('created_at', { ascending: true })
+        .limit(1);
+      if (!availableStaff || availableStaff.length === 0) {
+        return res.status(400).json({ error: 'No barbers currently available. Please try again later.' });
+      }
+      resolvedStaffId = availableStaff[0].id;
+    }
+
     // Upsert customer
     const { data: customer, error: customerError } = await supabase
       .from('customers')
@@ -127,7 +142,7 @@ export default async function handler(req, res) {
     const { data: durationRow, error: durErr } = await supabase
       .from('staff_service_durations')
       .select('duration_mins')
-      .eq('staff_id', staff_id)
+      .eq('staff_id', resolvedStaffId)
       .eq('service_id', service_id)
       .single();
 
@@ -143,7 +158,7 @@ export default async function handler(req, res) {
     const { data: existingBooking } = await supabase
       .from('bookings')
       .select('id')
-      .eq('staff_id', staff_id)
+      .eq('staff_id', resolvedStaffId)
       .neq('status', 'cancelled')
       .lt('start_datetime', endDate.toISOString())      // existing starts before new ends
       .gt('end_datetime', startDate.toISOString())        // existing ends after new starts
@@ -164,7 +179,7 @@ export default async function handler(req, res) {
       .from('bookings')
       .insert({
         customer_id: customer.id,
-        staff_id,
+        staff_id: resolvedStaffId,
         service_id,
         start_datetime: startDate.toISOString(),
         end_datetime: endDate.toISOString(),
@@ -180,7 +195,7 @@ export default async function handler(req, res) {
 
     // Get service and staff details for emails
     const { data: service } = await supabase.from('services').select('name').eq('id', service_id).single();
-    const { data: staffMember } = await supabase.from('staff').select('name').eq('id', staff_id).single();
+    const { data: staffMember } = await supabase.from('staff').select('name').eq('id', resolvedStaffId).single();
 
     // Send emails (fire and forget — don't fail booking if email fails)
     await Promise.all([
@@ -196,7 +211,7 @@ export default async function handler(req, res) {
         const nextEnd = new Date(nextStart.getTime() + durationMins * 60000);
         await supabase.from('bookings').insert({
           customer_id: customer.id,
-          staff_id,
+          staff_id: resolvedStaffId,
           service_id,
           start_datetime: nextStart.toISOString(),
           end_datetime: nextEnd.toISOString(),
