@@ -219,7 +219,7 @@ img{max-width:100%}
 
 /* Brand header (preserve all existing overrides) */
 .site-header .brand{min-width:0 !important;gap:12px !important}
-.site-header .brand-r{width:46px !important;height:46px !important;flex:0 0 46px !important;object-fit:contain !important;background:#fff !important;border-radius:12px !important;padding:4px !important;box-shadow:0 8px 24px rgba(0,0,0,.45) !important}
+.site-header .brand-r{width:min(200px,30vw) !important;height:auto !important;flex:0 0 auto !important;object-fit:contain !important;background:transparent !important;border-radius:0 !important;padding:0 !important;box-shadow:none !important;filter:drop-shadow(0 6px 18px rgba(0,0,0,.85)) !important}
 .site-header .brand-wordmark{display:block !important;width:260px !important;max-width:calc(100vw - 124px) !important;height:auto !important;max-height:58px !important;object-fit:contain !important;opacity:1 !important;visibility:visible !important;background:transparent !important;filter:drop-shadow(0 6px 18px rgba(0,0,0,.85)) !important}
 .site-header .brand-text{display:none !important}
 .hero-mark{background:transparent !important;border:0 !important;box-shadow:none !important;filter:drop-shadow(0 18px 42px rgba(0,0,0,.72)) !important;border-radius:0 !important}
@@ -239,7 +239,7 @@ img{max-width:100%}
 }
 @media (max-width:520px){
   .brand span,.brand small{display:none}.hero h1{font-size:56px}.section{padding:68px 18px}.strip{font-size:10px;letter-spacing:.16em;gap:12px}.barber-photo-card img{height:320px}.venue-overlay strong{font-size:26px}.hero-mark{width:100%}
-  .site-header .brand-r{width:48px !important;height:48px !important;flex-basis:48px !important}
+  .site-header .brand-r{width:min(160px,28vw) !important;height:auto !important;flex-basis:auto !important}
   .site-header .brand-wordmark{width:178px !important}
   .slots-grid{grid-template-columns:repeat(2,1fr)}
   .service-pick-card,.staff-pick-card,.staff-pick-any{text-align:center}
