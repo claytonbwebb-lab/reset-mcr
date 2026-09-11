@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=20260909b" />
+  <link rel="stylesheet" href="/styles.css?v=20260911fix1" />
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -293,7 +293,7 @@
             <h3 class="step-title">Your details.</h3>
             <form class="details-form" id="detailsForm">
               <label>Full name <input required name="customer_name" autocomplete="name" placeholder="Your name" id="custName" /></label>
-              <label>Mobile <input required name="customer_mobile" autocomplete="tel" placeholder="07..." id="custMobile" /></label>
+              <label for="custMobile">Mobile <input required type="tel" inputmode="tel" name="customer_mobile" autocomplete="tel-national" placeholder="07XX XXX XXXX" id="custMobile" pattern="[0-9+()\s-]*" /></label>
               <label class="full">Email <input required type="email" name="customer_email" autocomplete="email" placeholder="you@example.com" id="custEmail" /></label>
               <div class="recurring-wrap full" id="recurringWrap" style="display:none">
                 <p class="recurring-q" id="recurringQ"></p>
@@ -384,7 +384,7 @@
     </div>
   </div>
 
-  <script src="/script.js" defer></script>
+  <script src="/script.js?v=20260911fix1" defer></script>
   <script>
     // Cookie banner
     function acceptCookies() {

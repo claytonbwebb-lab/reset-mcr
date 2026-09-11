@@ -632,7 +632,8 @@ function populateStaffServiceDropdowns() {
 // Diary — date nav & view toggle
 // ─────────────────────────────────────────────────────────────────────────────
 function navigateDate(dir) {
-  const d = new Date(state.date + 'T00:00:00');
+  // Use midday UTC to avoid timezone boundary issues (BST UTC+1 means midnight = 23:00 UTC previous day)
+  const d = new Date(state.date + 'T12:00:00Z');
   if (state.view === 'weekly') d.setDate(d.getDate() + dir * 7);
   else d.setDate(d.getDate() + dir);
   state.date = d.toISOString().split('T')[0];

@@ -100,7 +100,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { service_id, staff_id, start_datetime, customer_name, customer_email, customer_mobile, is_recurring, recurring_interval } = req.body;
+    const { service_id, staff_id, start_datetime, customer_name, customer_email, customer_mobile, is_recurring, recurring_interval, validate_only } = req.body;
 
     // Validate required fields
     if (!service_id || !staff_id || !start_datetime || !customer_name || !customer_email) {
@@ -151,7 +151,12 @@ export default async function handler(req, res) {
       .maybeSingle();
 
     if (existingBooking) {
-      return res.status(409).json({ error: 'This slot is already booked.' });
+      return res.status(409).json({ error: 'This slot is already booked. Please go back and choose another time.' });
+    }
+
+    // Validate-only mode: check for conflicts without inserting
+    if (validate_only) {
+      return res.status(200).json({ ok: true });
     }
 
     // Insert booking

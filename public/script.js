@@ -103,6 +103,7 @@ function showStep(n) {
   state.step = n;
   updateStepIndicators();
   updateNavButtons();
+  if (n === 3) initialiseDateTimeStep();
   window.scrollTo({ top: document.getElementById('book').offsetTop - 90, behavior: 'smooth' });
 }
 
@@ -210,9 +211,6 @@ function renderStaffPick() {
 // ── Step 3: Date & Time ─────────────────────────────────────────────────────
 function setupDateTimePick() {
   const dateInput = document.getElementById('dateInput');
-  const slotsGrid = document.getElementById('slotsGrid');
-  const slotsHint = document.getElementById('slotsHint');
-
   if (!dateInput) return;
 
   // Set min date to today (UK timezone)
@@ -226,11 +224,28 @@ function setupDateTimePick() {
   dateInput.addEventListener('change', async () => {
     state.date = dateInput.value;
     state.time = null;
-    await loadSlots(dateInput.value, slotsGrid, slotsHint);
+    await loadSlots(dateInput.value);
   });
 }
 
-async function loadSlots(date, slotsGrid, slotsHint) {
+function initialiseDateTimeStep() {
+  const dateInput = document.getElementById('dateInput');
+  if (!dateInput) return;
+  const today = dateInput.min || new Date().toLocaleDateString('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
+  if (!dateInput.value || dateInput.value < today) {
+    dateInput.value = today;
+    state.date = today;
+  } else {
+    state.date = dateInput.value;
+  }
+  state.time = null;
+  loadSlots(state.date);
+}
+
+async function loadSlots(date) {
+  const slotsGrid = document.getElementById('slotsGrid');
+  const slotsHint = document.getElementById('slotsHint');
+  if (!slotsGrid || !slotsHint) return;
   slotsGrid.style.display = 'none';
   slotsHint.textContent = 'Loading available times…';
   slotsHint.style.display = 'block';
@@ -317,12 +332,16 @@ function setupDetailsForm() {
           customer_name: state.customer_name,
           customer_email: state.customer_email,
           customer_mobile: state.customer_mobile,
-          check_blocked: true
+          validate_only: true
         })
       });
       const checkData = await checkRes.json();
       if (checkRes.status === 403) {
         alert(checkData.error || 'Online booking unavailable — please contact Reset MCR directly.');
+        return;
+      }
+      if (checkRes.status === 409) {
+        alert(checkData.error || 'This slot is already booked. Please go back and choose another time.');
         return;
       }
     } catch (_) {}
