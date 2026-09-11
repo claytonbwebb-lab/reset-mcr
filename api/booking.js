@@ -9,8 +9,7 @@ const supabase = createClient(
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Use Resend sandbox domain — works without domain verification
-const FROM_EMAIL = 'onboarding@resend.dev';
+const FROM_EMAIL = 'Reset MCR <noreply@playpredictwin.com>';
 const JACK_EMAIL = process.env.EMAIL_TO || 'hello@resetmcr.com';
 
 function formatDate(dateStr) {
