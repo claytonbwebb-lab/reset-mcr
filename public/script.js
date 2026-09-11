@@ -302,12 +302,16 @@ function setupDetailsForm() {
           customer_name: state.customer_name,
           customer_email: state.customer_email,
           customer_mobile: state.customer_mobile,
-          check_blocked: true
+          validate_only: true
         })
       });
       const checkData = await checkRes.json();
       if (checkRes.status === 403) {
         alert(checkData.error || 'Online booking unavailable — please contact Reset MCR directly.');
+        return;
+      }
+      if (checkRes.status === 409) {
+        alert(checkData.error || 'This slot is already booked. Please go back and choose another time.');
         return;
       }
     } catch (_) {}

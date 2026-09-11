@@ -94,7 +94,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { service_id, staff_id, start_datetime, customer_name, customer_email, customer_mobile, is_recurring, recurring_interval } = req.body;
+    const { service_id, staff_id, start_datetime, customer_name, customer_email, customer_mobile, is_recurring, recurring_interval, validate_only } = req.body;
 
     // Validate required fields
     if (!service_id || !staff_id || !start_datetime || !customer_name || !customer_email) {
@@ -132,6 +132,24 @@ export default async function handler(req, res) {
     const durationMins = durationRow.duration_mins;
     const startDate = new Date(start_datetime);
     const endDate = new Date(startDate.getTime() + durationMins * 60000);
+
+    // Validate-only mode: check for conflicts without inserting
+    if (validate_only) {
+      const { data: conflict } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('staff_id', staff_id)
+        .neq('status', 'cancelled')
+        .lt('start_datetime', endDate.toISOString())
+        .gt('end_datetime', startDate.toISOString())
+        .limit(1)
+        .single();
+
+      if (conflict) {
+        return res.status(409).json({ error: 'This slot is already booked. Please go back and choose another time.' });
+      }
+      return res.status(200).json({ ok: true });
+    }
 
     // Insert booking
     const { data: booking, error: bookingError } = await supabase
