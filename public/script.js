@@ -44,17 +44,17 @@ const state = {
 
 // ── Static data (fetched or hardcoded for resilience) ────────────────────────
 const SERVICES = [
-  { id: 'svc-1', name: 'Haircut', desc: 'Skin fades, classic cuts, sharp finishing' },
-  { id: 'svc-2', name: 'Hair + Beard', desc: 'Cut and beard shape or fade' },
-  { id: 'svc-3', name: 'Beard Only', desc: 'Shape and style your beard' },
-  { id: 'svc-4', name: 'Kids Cut', desc: 'Under 12s welcome' },
-  { id: 'svc-5', name: 'Cut-Throat Shave', desc: 'Wet shave with cut-throat razor' },
-  { id: 'svc-6', name: 'Haircut + Cut-Throat', desc: 'The full reset — cut and wet shave' }
+  { id: '38ca4bff-83a4-4eb8-9a7d-5f5b2545f8c5', name: 'Haircut', desc: 'Skin fades, classic cuts, sharp finishing' },
+  { id: 'fbcbfa2e-31fd-4aec-bec0-338843129dc0', name: 'Hair + Beard', desc: 'Cut and beard shape or fade' },
+  { id: '4033a558-7773-4ad3-8a53-06a34ef567aa', name: 'Beard Only', desc: 'Shape and style your beard' },
+  { id: 'f7081409-ed0d-4816-a69d-ef6765aa479e', name: 'Kids Cut', desc: 'Under 12s welcome' },
+  { id: '772dcf5f-9318-47c5-b744-8a968abe657e', name: 'Cut-Throat Shave', desc: 'Wet shave with cut-throat razor' },
+  { id: '9e61ae42-e771-4a15-9f90-514acbac25c1', name: 'Haircut + Cut-Throat', desc: 'The full reset — cut and wet shave' }
 ];
 
 const STAFF = [
-  { id: 'staff-jack', name: 'Jack', role: 'Senior Barber', bio: 'Founder of Reset MCR — precision barber.' },
-  { id: 'staff-jaden', name: 'Jaden', role: 'Apprentice', bio: 'Rising talent at Reset MCR.' }
+  { id: '4afd71bc-ad0f-43b5-90fc-344487653558', name: 'Jack', role: 'Senior Barber', bio: 'Founder of Reset MCR — precision barber.' },
+  { id: '6dd105b2-7ca7-49e7-a6f5-c6536ed078d2', name: 'Jaden', role: 'Apprentice', bio: 'Rising talent at Reset MCR.' }
 ];
 
 // ── DOM refs ─────────────────────────────────────────────────────────────────
@@ -184,11 +184,25 @@ function renderStaffPick() {
 
   grid.querySelectorAll('input[name="staff_pick"]').forEach(input => {
     input.addEventListener('change', () => {
-      state.staff_id = input.value;
-      const s = STAFF.find(x => x.id === input.value);
+      const val = input.value;
+      state.staff_id = val;
+      const s = STAFF.find(x => x.id === val);
       state.staff_name = s ? s.name : 'Any Available';
       renderStaffPick();
       showStep(3);
+    });
+  });
+
+  // Mobile-friendly click handler on parent cards (radio change can be unreliable on touch)
+  grid.querySelectorAll('.staff-pick-card, .staff-pick-any').forEach(card => {
+    card.addEventListener('click', (e) => {
+      // If click originated from the radio input itself, let the change handler deal with it
+      if (e.target.tagName === 'INPUT') return;
+      const input = card.querySelector('input[name="staff_pick"]');
+      if (input) {
+        input.checked = true;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
     });
   });
 }
@@ -201,11 +215,12 @@ function setupDateTimePick() {
 
   if (!dateInput) return;
 
-  // Set min date to today
-  const today = new Date().toISOString().split('T')[0];
+  // Set min date to today (UK timezone)
+  const today = new Date().toLocaleDateString('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
   dateInput.min = today;
-  // Set max date to 4 weeks from now
-  const maxDate = new Date(Date.now() + 28 * 86400000).toISOString().split('T')[0];
+  // Set max date to 4 weeks from now (UK timezone)
+  const maxDateObj = new Date(Date.now() + 28 * 86400000);
+  const maxDate = maxDateObj.toLocaleDateString('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
   dateInput.max = maxDate;
 
   dateInput.addEventListener('change', async () => {
@@ -352,8 +367,11 @@ function renderSummary() {
 function setupConfirmBtn() {
   const btn = document.getElementById('confirmBookingBtn');
   const status = document.getElementById('bookingStatus');
+  let confirming = false;
 
   btn?.addEventListener('click', async () => {
+    if (confirming) return;
+    confirming = true;
     btn.disabled = true;
     status.textContent = 'Confirming your booking…';
 
@@ -376,6 +394,9 @@ function setupConfirmBtn() {
       const data = await res.json();
 
       if (!res.ok) {
+        if (res.status === 409) {
+          throw new Error(data.error || 'You already have a booking at this time.');
+        }
         throw new Error(data.error || 'Booking failed');
       }
 
@@ -383,6 +404,7 @@ function setupConfirmBtn() {
     } catch (err) {
       status.textContent = err.message || 'Something went wrong. Please try again or email hello@resetmcr.com';
       btn.disabled = false;
+      confirming = false;
     }
   });
 }
@@ -507,3 +529,108 @@ async function showCancelView(bookingId, email) {
     cancelView.innerHTML = '<p style="color:var(--red);">Could not load booking. Email hello@resetmcr.com</p>';
   }
 }
+
+// ── Desktop Calendar Widget ──────────────────────────────────────────────
+(function() {
+  const calEl = document.getElementById('bookingCalendar');
+  if (!calEl) return;
+
+  const calMonth = document.getElementById('calMonth');
+  const calDays = document.getElementById('calDays');
+  const calPrev = document.getElementById('calPrev');
+  const calNext = document.getElementById('calNext');
+  const dateInput = document.getElementById('dateInput');
+
+  let viewDate = new Date();
+  let todayStr = new Date().toLocaleDateString('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
+
+  function iso(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function renderCalendar() {
+    if (!calDays) return;
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    calMonth.textContent = `${monthNames[month]} ${year}`;
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startOffset = (firstDay.getDay() + 6) % 7; // Monday start
+
+    calDays.innerHTML = '';
+
+    // Previous month fill
+    const prevLast = new Date(year, month, 0).getDate();
+    for (let i = startOffset - 1; i >= 0; i--) {
+      const d = document.createElement('button');
+      d.className = 'cal-day other-month';
+      d.textContent = prevLast - i;
+      d.type = 'button';
+      calDays.appendChild(d);
+    }
+
+    // Current month
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const d = document.createElement('button');
+      const dateStr = iso(new Date(year, month, day));
+      let cls = 'cal-day';
+      if (dateStr === todayStr) cls += ' today';
+      if (dateInput && dateInput.value === dateStr) cls += ' selected';
+      if (dateStr < todayStr) cls += ' disabled';
+
+      d.className = cls;
+      d.textContent = day;
+      d.type = 'button';
+      d.dataset.date = dateStr;
+      d.addEventListener('click', () => {
+        if (dateInput) {
+          dateInput.value = dateStr;
+          dateInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        renderCalendar();
+      });
+      calDays.appendChild(d);
+    }
+
+    // Next month fill to complete rows
+    const totalCells = startOffset + lastDay.getDate();
+    const remaining = (7 - (totalCells % 7)) % 7;
+    for (let day = 1; day <= remaining; day++) {
+      const d = document.createElement('button');
+      d.className = 'cal-day other-month';
+      d.textContent = day;
+      d.type = 'button';
+      calDays.appendChild(d);
+    }
+  }
+
+  calPrev?.addEventListener('click', () => {
+    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+    renderCalendar();
+  });
+
+  calNext?.addEventListener('click', () => {
+    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
+    renderCalendar();
+  });
+
+  // Re-render when date changes via native input
+  dateInput?.addEventListener('change', () => {
+    if (dateInput.value) {
+      const picked = new Date(dateInput.value + 'T00:00:00');
+      if (!isNaN(picked)) {
+        viewDate = new Date(picked.getFullYear(), picked.getMonth(), 1);
+      }
+    }
+    renderCalendar();
+  });
+
+  renderCalendar();
+})();
+
