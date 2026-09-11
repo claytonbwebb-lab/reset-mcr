@@ -9,8 +9,8 @@ const supabase = createClient(
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM_EMAIL = 'hello@resetmcr.com';
-const JACK_EMAIL = process.env.JACK_EMAIL || 'hello@resetmcr.com';
+const FROM_EMAIL = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+const JACK_EMAIL = process.env.EMAIL_TO || 'hello@resetmcr.com';
 
 // All datetimes are stored and received as UTC ISO strings.
 // Formatting converts to UK local time for display.

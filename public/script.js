@@ -317,7 +317,7 @@ function setupDetailsForm() {
 
     const formData = new FormData(form);
     state.customer_name = formData.get('customer_name');
-    state.customer_mobile = formData.get('customer_mobile');
+    state.customer_mobile = formData.get('phone');
     state.customer_email = formData.get('customer_email');
 
     // Check for blocked customer before proceeding
