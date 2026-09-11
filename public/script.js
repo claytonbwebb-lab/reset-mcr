@@ -47,14 +47,14 @@ const SERVICES = [
   { id: '38ca4bff-83a4-4eb8-9a7d-5f5b2545f8c5', name: 'Haircut', desc: 'Skin fades, classic cuts, sharp finishing' },
   { id: 'fbcbfa2e-31fd-4aec-bec0-338843129dc0', name: 'Hair + Beard', desc: 'Cut and beard shape or fade' },
   { id: '4033a558-7773-4ad3-8a53-06a34ef567aa', name: 'Beard Only', desc: 'Shape and style your beard' },
-  { id: 'f7081409-ed0d-4816-a69d-ef6765aa479e', name: 'Kids Cut', desc: 'Under 12s welcome' },
+  { id: 'f7081409-ed0d-4816-a69d-ef6765aa479e', name: 'Kids Cut', desc: 'Under 16s welcome' },
   { id: '772dcf5f-9318-47c5-b744-8a968abe657e', name: 'Cut-Throat Shave', desc: 'Wet shave with cut-throat razor' },
   { id: '9e61ae42-e771-4a15-9f90-514acbac25c1', name: 'Haircut + Cut-Throat', desc: 'The full reset — cut and wet shave' }
 ];
 
 const STAFF = [
   { id: '4afd71bc-ad0f-43b5-90fc-344487653558', name: 'Jack', role: 'Senior Barber', bio: 'Founder of Reset MCR — precision barber.' },
-  { id: '6dd105b2-7ca7-49e7-a6f5-c6536ed078d2', name: 'Jaden', role: 'Apprentice', bio: 'Rising talent at Reset MCR.' }
+  { id: '6dd105b2-7ca7-49e7-a6f5-c6536ed078d2', name: 'Jaden', role: 'Trainee Barber', bio: 'Rising talent at Reset MCR.' }
 ];
 
 // ── DOM refs ─────────────────────────────────────────────────────────────────
