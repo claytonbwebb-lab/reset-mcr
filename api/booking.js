@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import { Resend } from 'resend';
 import { ukLocalToUtcIso } from './_ukTime.js';
 
 const supabase = createClient(
@@ -7,10 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-const FROM_EMAIL = process.env.EMAIL_FROM || 'onboarding@resend.dev';
-const JACK_EMAIL = process.env.EMAIL_TO || 'hello@resetmcr.com';
+const VPS_EMAIL_URL = 'http://13.49.47.171:3001/api/booking-email';
 
 // All datetimes are stored and received as UTC ISO strings.
 // Formatting converts to UK local time for display.
@@ -27,70 +23,25 @@ function formatTime(dateStr) {
   });
 }
 
-async function sendCustomerConfirmation(booking, customer, service, staffMember) {
+async function proxyEmails(booking, customer, service, staffMember) {
   const cancelLink = `https://resetmcr.com/?cancel=${booking.id}&email=${encodeURIComponent(customer.email)}`;
   try {
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to: customer.email,
-      subject: `Your booking at Reset MCR — ${formatDate(booking.start_datetime)}`,
-      html: `
-        <div style="font-family:Inter,system-ui,sans-serif;max-width:560px;margin:0 auto;color:#f7f3ec;background:#050505;padding:40px;border-radius:24px;">
-          <div style="text-align:center;margin-bottom:32px;">
-            <img src="https://resetmcr.com/assets/reset-mcr-logo.png" alt="RESET MCR" style="width:60px;height:60px;border-radius:12px;object-fit:contain;" />
-          </div>
-          <h1 style="font-family:Oswald,sans-serif;text-transform:uppercase;font-size:32px;text-align:center;color:#e3c89c;margin:0 0 8px;">Booking Confirmed</h1>
-          <p style="text-align:center;color:#b6ada0;margin:0 0 32px;">Thanks ${customer.name}, your appointment is set.</p>
-          <div style="background:#0b0b0b;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:28px;margin-bottom:24px;">
-            <table style="width:100%;border-collapse:collapse;">
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Service</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${service.name}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Barber</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${staffMember.name}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Date</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${formatDate(booking.start_datetime)}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Time</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${formatTime(booking.start_datetime)}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Location</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">Under the railway arches, Stalybridge</td></tr>
-            </table>
-          </div>
-          <p style="text-align:center;font-size:14px;color:#b6ada0;margin-bottom:20px;">
-            Need to change your booking?<br/>
-            <a href="${cancelLink}" style="color:#e3c89c;">Cancel or reschedule online</a><br/>
-            <small>Changes close 30 mins before your appointment</small>
-          </p>
-          <p style="text-align:center;color:#b6ada0;font-size:12px;margin:0;">See you at Reset MCR — under the railway arches, Stalybridge</p>
-        </div>
-      `
+    await fetch(VPS_EMAIL_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerEmail: customer.email,
+        customerName: customer.name,
+        barberName: staffMember.name,
+        serviceName: service.name,
+        date: formatDate(booking.start_datetime),
+        time: formatTime(booking.start_datetime),
+        cancelLink,
+        adminEmails: ['hello@resetmcr.com']
+      })
     });
   } catch (e) {
-    console.error('Customer email failed:', e.message);
-  }
-}
-
-async function sendJackNotification(booking, customer, service, staffMember) {
-  try {
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to: JACK_EMAIL,
-      subject: `New booking — ${service.name} with ${customer.name}`,
-      html: `
-        <div style="font-family:Inter,system-ui,sans-serif;max-width:560px;margin:0 auto;color:#f7f3ec;background:#050505;padding:40px;border-radius:24px;">
-          <h1 style="font-family:Oswald,sans-serif;text-transform:uppercase;font-size:28px;color:#e3c89c;margin:0 0 24px;">New Booking</h1>
-          <div style="background:#0b0b0b;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:28px;margin-bottom:24px;">
-            <table style="width:100%;border-collapse:collapse;">
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Customer</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${customer.name}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Email</td><td style="text-align:right;color:#f7f3ec;padding:6px 0;">${customer.email}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Mobile</td><td style="text-align:right;color:#f7f3ec;padding:6px 0;">${customer.mobile || '—'}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Service</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${service.name}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Barber</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${staffMember.name}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Date</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${formatDate(booking.start_datetime)}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Time</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${formatTime(booking.start_datetime)}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Source</td><td style="text-align:right;color:#f7f3ec;padding:6px 0;">${booking.source}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Recurring</td><td style="text-align:right;color:#f7f3ec;padding:6px 0;">${booking.is_recurring ? booking.recurring_interval : 'No'}</td></tr>
-            </table>
-          </div>
-        </div>
-      `
-    });
-  } catch (e) {
-    console.error('Jack notification failed:', e.message);
+    console.error('Email proxy failed:', e.message);
   }
 }
 
@@ -197,11 +148,8 @@ export default async function handler(req, res) {
     const { data: service } = await supabase.from('services').select('name').eq('id', service_id).single();
     const { data: staffMember } = await supabase.from('staff').select('name').eq('id', resolvedStaffId).single();
 
-    // Send emails (fire and forget — don't fail booking if email fails)
-    await Promise.all([
-      sendCustomerConfirmation(booking, customer, service, staffMember),
-      sendJackNotification(booking, customer, service, staffMember)
-    ]);
+    // Send emails via VPS proxy (fire and forget — don't fail booking if email fails)
+    proxyEmails(booking, customer, service, staffMember);
 
     // Schedule next recurring booking if applicable (up to 4 weeks ahead)
     if (is_recurring && recurring_interval) {
