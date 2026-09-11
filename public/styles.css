@@ -250,6 +250,15 @@ img{max-width:100%}
   .site-header .brand-wordmark{width:178px !important}
   .slots-grid{grid-template-columns:repeat(2,1fr)}
   .service-pick-card,.staff-pick-card,.staff-pick-any{text-align:center}
+  .testimonials-grid{grid-template-columns:1fr}
+  .booking-section{padding:24px}
+  .datetime-pick{grid-template-columns:1fr}
+  .details-form{grid-template-columns:1fr}
+  .booking-nav{flex-wrap:wrap;justify-content:center}
+  .booking-step{text-align:center}
+  .booking-step h3{text-align:center}
+  .service-pick-grid{grid-template-columns:1fr}
+  .staff-pick-grid{grid-template-columns:1fr}
 }
 
 input[type="date"], input[type="datetime-local"], input[type="time"] { color-scheme: dark; }
