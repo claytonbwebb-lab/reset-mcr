@@ -126,7 +126,7 @@ img{max-width:100%}
 .date-pick-wrap{display:flex;flex-direction:column;gap:10px}
 .date-pick-wrap label{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
 .date-input{background:#0d0d0d;border:1px solid var(--line);border-radius:14px;color:#fff;padding:14px 16px;font:700 18px Oswald,sans-serif;outline:none;cursor:pointer;min-width:200px}
-.date-input::-webkit-calendar-picker-indicator{background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="%23ffffff" viewBox="0 0 16 16"><path d="M14 0H2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zM1 3.857C1 3.384 1.448 3 2 3h12c.552 0 1 .384 1 .857v10.286c0 .473-.448.857-1 .857H2c-.552 0-1-.384-1-.857V3.857z"/><path d="M6.5 7a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-9 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm3 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>');background-size:16px;background-repeat:no-repeat;background-position:center;width:16px;height:16px;cursor:pointer;opacity:1}
+.date-input::-webkit-calendar-picker-indicator{color:#fff;opacity:1;cursor:pointer}
 .date-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(184,155,117,.18)}
 .slots-pick{min-height:120px}
 .slots-hint{color:var(--muted);font-size:15px;margin:0}
