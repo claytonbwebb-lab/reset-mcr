@@ -27,7 +27,7 @@ img{max-width:100%}
 .nav{display:flex;align-items:center;gap:26px;color:#ddd;font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
 .nav a:hover{color:#fff}.nav-cta{border:1px solid var(--gold);border-radius:999px;padding:10px 16px;color:#fff;background:rgba(184,155,117,.12)}
 .nav-toggle{display:none;background:transparent;border:0;width:44px;height:44px}.nav-toggle span{display:block;height:2px;background:#fff;margin:8px}
-.hero{min-height:100svh;position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,560px);gap:44px;align-items:start;padding:104px clamp(20px,5vw,72px) 58px;max-width:1440px;margin:auto}
+.hero{min-height:100svh;position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,560px);gap:44px;align-items:start;padding:104px clamp(20px,5vw,72px) 58px;max-width:1440px;margin:auto;clip-path:inset(0);-webkit-clip-path:inset(0)}
 .hero-bg{position:absolute;inset:0;z-index:-2;background:radial-gradient(circle at 70% 25%,rgba(184,155,117,.18),transparent 30%),radial-gradient(circle at 20% 80%,rgba(211,32,32,.14),transparent 24%),linear-gradient(135deg,#050505,#090909 40%,#050505)}
 .hero-bg span{position:absolute;border:1px solid rgba(255,255,255,.08);border-radius:999px}.hero-bg span:nth-child(1){width:640px;height:640px;right:-220px;top:80px}.hero-bg span:nth-child(2){width:360px;height:360px;left:-120px;bottom:80px}.hero-bg span:nth-child(3){inset:20% 10%;border-radius:36px;transform:skewY(-4deg);background:linear-gradient(120deg,transparent,rgba(255,255,255,.035),transparent)}
 .hero-mark{display:block;width:min(420px,76vw);border-radius:18px;margin-bottom:22px;border:1px solid rgba(255,255,255,.1);box-shadow:0 22px 70px rgba(0,0,0,.42)}
