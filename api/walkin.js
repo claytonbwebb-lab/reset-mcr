@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import { Resend } from 'resend';
 import { ukLocalToUtcIso } from './_ukTime.js';
 
 const supabase = createClient(
@@ -7,9 +6,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = 'hello@resetmcr.com';
-const JACK_EMAIL = process.env.JACK_EMAIL || 'hello@resetmcr.com';
+const VPS_EMAIL_URL = 'http://13.49.47.171/api/resetmcr/walkin-email';
+const JACK_EMAIL = process.env.JACK_EMAIL || 'jack@resetmcr.com';
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -67,30 +65,26 @@ export default async function handler(req, res) {
 
     if (error) throw error;
 
-    // Send Jack notification
+    // Send Jack notification via VPS
     const { data: service } = await supabase.from('services').select('name').eq('id', service_id).single();
     const { data: staffMember } = await supabase.from('staff').select('name').eq('id', staff_id).single();
 
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to: JACK_EMAIL,
-      subject: `Walk-in — ${service?.name} with ${customer_name}`,
-      html: `
-        <div style="font-family:Inter,system-ui,sans-serif;max-width:560px;margin:0 auto;color:#f7f3ec;background:#050505;padding:40px;border-radius:24px;">
-          <h1 style="font-family:Oswald,sans-serif;text-transform:uppercase;font-size:28px;color:#e3c89c;margin:0 0 24px;">Walk-in Added</h1>
-          <div style="background:#0b0b0b;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:28px;">
-            <table style="width:100%;border-collapse:collapse;">
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Customer</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${customer_name}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Mobile</td><td style="text-align:right;color:#f7f3ec;padding:6px 0;">${customer_mobile || '—'}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Service</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${service?.name}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Barber</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${staffMember?.name}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Date</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${formatDate(startDate.toISOString())}</td></tr>
-              <tr><td style="color:#b6ada0;font-size:13px;padding:6px 0;">Time</td><td style="text-align:right;color:#f7f3ec;font-weight:700;padding:6px 0;">${formatTime(startDate.toISOString())}</td></tr>
-            </table>
-          </div>
-        </div>
-      `
-    }).catch(e => console.error('Walk-in notification failed:', e.message));
+    try {
+      await fetch(VPS_EMAIL_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: customer_name,
+          customerMobile: customer_mobile || null,
+          serviceName: service?.name,
+          barberName: staffMember?.name,
+          date: formatDate(startDate.toISOString()),
+          time: formatTime(startDate.toISOString())
+        })
+      });
+    } catch (e) {
+      console.error('Walk-in email proxy failed:', e.message);
+    }
 
     return res.status(200).json({ booking_id: booking.id, success: true });
   } catch (error) {

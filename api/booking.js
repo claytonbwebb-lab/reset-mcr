@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const VPS_EMAIL_URL = 'http://13.49.47.171/api/booking-email';
+const VPS_EMAIL_URL = 'http://13.49.47.171/api/resetmcr/booking-email';
 
 // All datetimes are stored and received as UTC ISO strings.
 // Formatting converts to UK local time for display.

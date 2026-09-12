@@ -1,13 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
-import { Resend } from 'resend';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = 'hello@resetmcr.com';
+const VPS_EMAIL_URL = 'http://13.49.47.171/api/resetmcr/attendance-email';
 
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -83,22 +81,22 @@ export default async function handler(req, res) {
 
     // Send cancellation email if cancelled
     if (status === 'cancelled' && booking.customer) {
-      const cancelLink = `https://resetmcr.com/?cancel=${booking.id}&email=${encodeURIComponent(booking.customer.email)}`;
-      await resend.emails.send({
-        from: FROM_EMAIL,
-        to: booking.customer.email,
-        subject: 'Booking cancelled — Reset MCR',
-        html: `
-          <div style="font-family:Inter,system-ui,sans-serif;max-width:560px;margin:0 auto;color:#f7f3ec;background:#050505;padding:40px;border-radius:24px;">
-            <h1 style="font-family:Oswald,sans-serif;text-transform:uppercase;font-size:28px;color:#e3c89c;text-align:center;margin:0 0 24px;">Booking Cancelled</h1>
-            <p style="text-align:center;color:#b6ada0;margin:0 0 32px;">Your appointment on ${formatDate(booking.start_datetime)} at ${formatTime(booking.start_datetime)} has been cancelled.</p>
-            ${cancellation_reason ? `<p style="color:#b6ada0;font-size:14px;text-align:center;"><em>"${cancellation_reason}"</em></p>` : ''}
-            <p style="text-align:center;margin-top:28px;">
-              <a href="https://resetmcr.com/#book" style="background:linear-gradient(135deg,#e3c89c,#b89b75);color:#060606;padding:14px 24px;border-radius:999px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;text-decoration:none;">Book a new appointment</a>
-            </p>
-          </div>
-        `
-      }).catch(e => console.error('Cancellation email failed:', e.message));
+      try {
+        await fetch(VPS_EMAIL_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customerEmail: booking.customer.email,
+            customerName: booking.customer.name,
+            date: formatDate(booking.start_datetime),
+            time: formatTime(booking.start_datetime),
+            status: 'cancelled',
+            cancellationReason: cancellation_reason || null
+          })
+        });
+      } catch (e) {
+        console.error('Cancellation email proxy failed:', e.message);
+      }
     }
 
     return res.status(200).json({ success: true });
