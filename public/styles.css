@@ -248,7 +248,7 @@ img{max-width:100%}
   .site-header .brand-wordmark{width:220px !important}
 }
 @media (max-width:520px){
-  .brand span,.brand small{display:none}.hero h1{font-size:56px}.section{padding:68px 18px}.strip{font-size:10px;letter-spacing:.16em;gap:12px}.barber-photo-card img{height:320px}.venue-overlay strong{font-size:26px}.hero-mark{width:100%}
+  .brand span,.brand small{display:none}.hero h1{font-size:56px}.section{padding:68px 18px}.strip{font-size:10px;letter-spacing:.16em;gap:12px}.barber-photo-card img{height:320px}.venue-overlay strong{font-size:26px}.hero-mark{width:100%}.hero-bg span:nth-child(1){display:none}
   .site-header .brand-r{width:min(160px,28vw) !important;height:auto !important;flex-basis:auto !important}
   .site-header .brand-wordmark{width:178px !important}
   .slots-grid{grid-template-columns:repeat(2,1fr)}
