@@ -37,7 +37,7 @@ async function sendEmailsViaVps(booking, customer, service, staffMember) {
         date: formatDate(booking.start_datetime),
         time: formatTime(booking.start_datetime),
         cancelLink,
-        adminEmails: ['hello@resetmcr.com']
+        adminEmails: [process.env.JACK_EMAIL || 'jack@resetmcr.com']
       })
     });
   } catch (e) {
@@ -137,8 +137,12 @@ export default async function handler(req, res) {
     const { data: service } = await supabase.from('services').select('name').eq('id', service_id).single();
     const { data: staffMember } = await supabase.from('staff').select('name').eq('id', resolvedStaffId).single();
 
-    // Send emails via VPS Zoho proxy (fire and forget — don't fail booking if email fails)
-    sendEmailsViaVps(booking, customer, service, staffMember);
+    // Send emails via VPS Zoho proxy (await so it completes before Vercel freezes)
+    try {
+      await sendEmailsViaVps(booking, customer, service, staffMember);
+    } catch (e) {
+      console.error('Email proxy failed:', e.message);
+    }
 
     if (is_recurring && recurring_interval) {
       const intervalDays = recurring_interval === 'weekly' ? 7 : recurring_interval === 'fortnightly' ? 14 : 30;
