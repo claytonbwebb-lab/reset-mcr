@@ -1,5 +1,5 @@
 const fs = require('fs');
-const required = ['public/index.html','public/styles.css','public/script.js','public/robots.txt','public/sitemap.xml'];
+const required = ['public/index.html','public/styles-v2.css','public/script.js','public/robots.txt','public/sitemap.xml'];
 let ok = true;
 for (const file of required) {
   if (!fs.existsSync(file)) { console.error(`Missing ${file}`); ok = false; }
