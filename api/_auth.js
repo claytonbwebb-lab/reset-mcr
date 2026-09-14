@@ -23,14 +23,16 @@ export async function requireAuth(headers, supabase) {
     }
 
     if (!staff && staffName) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('staff')
         .select('id, name, diary_role, diary_password')
         .eq('name', staffName)
         .single();
       staff = data;
+      console.error('[AUTH] staffName=', staffName, 'data=', data ? 'found' : 'null', 'error=', error?.message || 'none');
     }
 
+    console.error('[AUTH] staff=', staff ? staff.name : 'null', 'diary_password_set=', staff ? !!staff.diary_password : 'n/a', 'match=', staff && staff.diary_password === password);
     if (staff && staff.diary_password && password === staff.diary_password) {
       return { staff_id: staff.id, name: staff.name, role: staff.diary_role || 'barber' };
     }
