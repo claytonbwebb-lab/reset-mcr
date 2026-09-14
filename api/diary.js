@@ -12,8 +12,9 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  let auth;
   try {
-    const auth = await requireAuth(req.headers, supabase);
+    auth = await requireAuth(req.headers, supabase);
   } catch (e) {
     return res.status(401).json({ error: e.message });
   }
