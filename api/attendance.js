@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from './_auth.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -20,6 +21,13 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  let auth;
+  try {
+    auth = await requireAuth(req.headers, supabase);
+  } catch (e) {
+    return res.status(401).json({ error: e.message });
+  }
+
   try {
     const { booking_id, status, cancellation_reason } = req.body;
 
@@ -35,7 +43,7 @@ export default async function handler(req, res) {
     const { data: booking, error: fetchErr } = await supabase
       .from('bookings')
       .select(`
-        id, start_datetime, status,
+        id, start_datetime, status, staff_id,
         customer:customer_id(id, name, email, consecutive_no_shows),
         staff:staff_id(name),
         service:service_id(name)
@@ -45,6 +53,11 @@ export default async function handler(req, res) {
 
     if (fetchErr || !booking) {
       return res.status(404).json({ error: 'Booking not found' });
+    }
+
+    // Barbers can only manage their own bookings
+    if (auth.role === 'barber' && booking.staff_id !== auth.staff_id) {
+      return res.status(403).json({ error: 'Not authorised' });
     }
 
     // Update booking status

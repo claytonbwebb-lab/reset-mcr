@@ -1,26 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 import { ukLocalToUtcIso } from './_ukTime.js';
+import { requireAuth } from './_auth.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const DIARY_PASSWORD = process.env.DIARY_PASSWORD || 'reset2026';
-
-async function requireAuth(headers) {
-  if (DIARY_PASSWORD && headers['x-diary-password'] !== DIARY_PASSWORD) {
-    throw new Error('Unauthorized');
-  }
-}
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  let auth;
   try {
-    await requireAuth(req.headers);
+    auth = await requireAuth(req.headers, supabase);
   } catch (e) {
     return res.status(401).json({ error: e.message });
   }
@@ -31,6 +25,7 @@ export default async function handler(req, res) {
     switch (action) {
 
       case 'move': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can move bookings' });
         const { booking_id, new_start_datetime } = params;
         if (!booking_id || !new_start_datetime) {
           return res.status(400).json({ error: 'booking_id and new_start_datetime required' });
@@ -53,6 +48,7 @@ export default async function handler(req, res) {
       }
 
       case 'block': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can block customers' });
         const { customer_id } = params;
         if (!customer_id) return res.status(400).json({ error: 'customer_id required' });
         const { error } = await supabase
@@ -64,6 +60,7 @@ export default async function handler(req, res) {
       }
 
       case 'unblock': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can unblock customers' });
         const { customer_id } = params;
         if (!customer_id) return res.status(400).json({ error: 'customer_id required' });
         const { error } = await supabase
@@ -79,6 +76,10 @@ export default async function handler(req, res) {
       case 'get_availability': {
         const { staff_id } = params;
         if (!staff_id) return res.status(400).json({ error: 'staff_id required' });
+        // Barbers can only see their own availability
+        if (auth.role === 'barber' && auth.staff_id !== staff_id) {
+          return res.status(403).json({ error: 'Not authorised' });
+        }
         const { data } = await supabase
           .from('staff_availability')
           .select('id, day_of_week, start_time, end_time, break_start, break_end')
@@ -88,7 +89,7 @@ export default async function handler(req, res) {
       }
 
       case 'set_availability': {
-        // Upsert a single day-of-week row
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can set availability' });
         const { staff_id, day_of_week, start_time, end_time, break_start, break_end } = params;
         if (!staff_id || day_of_week === undefined || !start_time || !end_time) {
           return res.status(400).json({ error: 'staff_id, day_of_week, start_time, end_time required' });
@@ -114,6 +115,7 @@ export default async function handler(req, res) {
       }
 
       case 'remove_availability': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can remove availability' });
         const { id } = params;
         if (!id) return res.status(400).json({ error: 'id required' });
         const { error } = await supabase
@@ -127,6 +129,7 @@ export default async function handler(req, res) {
       // ─── Time-off ────────────────────────────────────────────────────────────
 
       case 'get_timeoff': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can view time off' });
         const { staff_id } = params;
         let query = supabase
           .from('staff_unavailable')
@@ -139,6 +142,7 @@ export default async function handler(req, res) {
       }
 
       case 'add_timeoff': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can add time off' });
         const { staff_id, start_datetime, end_datetime, reason } = params;
         if (!staff_id || !start_datetime || !end_datetime) {
           return res.status(400).json({ error: 'staff_id, start_datetime, end_datetime required' });
@@ -151,6 +155,7 @@ export default async function handler(req, res) {
       }
 
       case 'remove_timeoff': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can remove time off' });
         const { id } = params;
         if (!id) return res.status(400).json({ error: 'id required' });
         const { error } = await supabase
@@ -164,9 +169,13 @@ export default async function handler(req, res) {
       // ─── Manual booking ───────────────────────────────────────────────────────
 
       case 'add': {
-        const { service_id, staff_id, start_datetime, customer_name, customer_email, customer_mobile } = params;
+        // Barbers can only create manual bookings for themselves
+        let { service_id, staff_id, start_datetime, customer_name, customer_email, customer_mobile } = params;
         if (!service_id || !staff_id || !start_datetime || !customer_name || !customer_email) {
           return res.status(400).json({ error: 'Missing required fields' });
+        }
+        if (auth.role === 'barber') {
+          staff_id = auth.staff_id; // force to self
         }
         const { data: dur } = await supabase
           .from('staff_service_durations')
@@ -202,6 +211,7 @@ export default async function handler(req, res) {
       // ─── Staff CRUD ────────────────────────────────────────────────────────
 
       case 'create_staff': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can create staff' });
         const { name, role, bio } = params;
         if (!name || !role) return res.status(400).json({ error: 'name and role required' });
         const { data, error } = await supabase
@@ -214,6 +224,7 @@ export default async function handler(req, res) {
       }
 
       case 'update_staff': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can update staff' });
         const { id, name, role, bio } = params;
         if (!id) return res.status(400).json({ error: 'id required' });
         const updates = {};
@@ -231,6 +242,7 @@ export default async function handler(req, res) {
       }
 
       case 'delete_staff': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can deactivate staff' });
         const { id } = params;
         if (!id) return res.status(400).json({ error: 'id required' });
         // Soft-delete: set is_active = false
@@ -243,7 +255,7 @@ export default async function handler(req, res) {
       }
 
       case 'set_service_durations': {
-        // params: staff_id, durations: [{ service_id, duration_mins }]
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can set durations' });
         const { staff_id, durations } = params;
         if (!staff_id || !durations) return res.status(400).json({ error: 'staff_id and durations required' });
         // Replace all durations for this staff
@@ -257,6 +269,7 @@ export default async function handler(req, res) {
       // ─── Customer search ─────────────────────────────────────────────────────
 
       case 'search_customers': {
+        // Barbers can search customers for manual booking; no role restriction needed
         const { q } = params;
         if (!q || q.length < 2) return res.status(200).json({ customers: [] });
         const { data } = await supabase

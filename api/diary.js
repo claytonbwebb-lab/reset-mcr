@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { ukDateStartUtc, ukDateEndUtc } from './_ukTime.js';
+import { requireAuth } from './_auth.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -9,6 +10,12 @@ const supabase = createClient(
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const auth = await requireAuth(req.headers, supabase);
+  } catch (e) {
+    return res.status(401).json({ error: e.message });
   }
 
   try {
@@ -43,7 +50,10 @@ export default async function handler(req, res) {
         .lte('start_datetime', ukDateEndUtc(weekEnd.toISOString().split('T')[0]));
     }
 
-    if (staff_id) {
+    // For barber role, filter to only their own bookings
+    if (auth.role === 'barber' && auth.staff_id) {
+      query = query.eq('staff_id', auth.staff_id);
+    } else if (staff_id) {
       query = query.eq('staff_id', staff_id);
     }
 
@@ -54,8 +64,6 @@ export default async function handler(req, res) {
     // Calculate capacity % for weekly view
     let capacity = null;
     if (view === 'weekly') {
-      // Total available minutes Mon-Sat (6 days) = 6 days * (8.5h - 0.5h break) = 6 * 8 * 60 = 2880? No: 6 * 8h = 2880? Wait: 09:00-18:00=9h, break=0.5h, so 8.5h = 510 mins per day. 510*6=3060 mins
-      // Get total booked minutes
       const bookedMins = (bookings || []).reduce((acc, b) => {
         const s = new Date(b.start_datetime);
         const e = new Date(b.end_datetime);
@@ -63,9 +71,14 @@ export default async function handler(req, res) {
       }, 0);
 
       // Get staff availability for the week
-      const { data: availRows } = await supabase
+      // For barber role, only count their own availability
+      let availQuery = supabase
         .from('staff_availability')
         .select('start_time, end_time, break_start, break_end');
+      if (auth.role === 'barber' && auth.staff_id) {
+        availQuery = availQuery.eq('staff_id', auth.staff_id);
+      }
+      const { data: availRows } = await availQuery;
 
       let totalAvailMins = 0;
       for (const a of availRows || []) {

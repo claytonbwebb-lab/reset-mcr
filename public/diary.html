@@ -20,8 +20,9 @@
     .gate{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;flex-direction:column;gap:20px}
     .gate h1{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:clamp(28px,5vw,48px);margin:0 0 8px;letter-spacing:-.02em}
     .gate p{color:var(--muted);margin:0 0 20px}
-    .gate input{background:#111;border:1px solid var(--line);border-radius:14px;color:#fff;padding:15px 18px;font:700 18px Inter,sans-serif;width:280px;outline:none;text-align:center}
-    .gate input:focus{border-color:var(--gold)}
+    .gate select,.gate input{background:#111;border:1px solid var(--line);border-radius:14px;color:#fff;padding:15px 18px;font:700 18px Inter,sans-serif;width:280px;outline:none;text-align:center}
+    .gate select:focus,.gate input:focus{border-color:var(--gold)}
+    .gate select option{color:#000}
     .gate button{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#060606;border:none;border-radius:999px;padding:15px 32px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;cursor:pointer;font-size:14px}
     .gate button:hover{transform:translateY(-1px)}
     .gate-error{color:var(--red);font-size:14px;font-weight:700;display:none}
@@ -233,10 +234,15 @@
 <!-- Password Gate -->
 <div class="gate" id="gate">
   <h1>Reset MCR Diary</h1>
-  <p>Enter your diary password</p>
+  <p>Select your name and enter your password</p>
+  <select id="gateUser" style="text-align:center;text-align-last:center;">
+    <option value="">— Select —</option>
+    <option value="Jack">Jack</option>
+    <option value="Jayden">Jayden</option>
+  </select>
   <input type="password" id="gatePassword" placeholder="Password" />
   <button onclick="checkPassword()">Open diary</button>
-  <p class="gate-error" id="gateError">Incorrect password. Try again.</p>
+  <p class="gate-error" id="gateError">Incorrect login. Try again.</p>
 </div>
 
 <!-- App -->
@@ -498,23 +504,24 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // State
 // ─────────────────────────────────────────────────────────────────────────────
-var PASSWORD = ''; // set on successful login
+var PASSWORD = '';       // set on successful login
+var USER_NAME = '';      // set on successful login
+var USER_ROLE = '';      // 'admin' | 'barber'
+var passwordVerified = false;
+
 const state = {
-  view: 'daily',           // diary: daily|weekly
+  view: 'daily',
   date: new Date().toLocaleDateString('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-'),
-  appTab: 'diary',         // app-level: diary|settings
-  settingsTab: 'hours',    // settings sub-tabs: hours|timeoff|booking
+  appTab: 'diary',
+  settingsTab: 'hours',
   staff: [],
   services: [],
   bookings: [],
   capacity: null,
-  // hours editor
-  hours: {},               // { staffId: { [dayOfWeek]: { enabled, start, end, breakStart, breakEnd } } }
-  // time-off
+  hours: {},
   timeoff: [],
-  // manual booking
-  selectedCustomer: null,  // { id, name, email, mobile, is_blocked }
-  selectedSlot: null,      // { time, staff_id, duration_mins }
+  selectedCustomer: null,
+  selectedSlot: null,
   selectedService: null,
   selectedStaff: null,
   walkinStep: 1
@@ -523,23 +530,29 @@ const state = {
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Auth — password is validated server-side on first API call
+// Auth — staff-based with role filtering
 // ─────────────────────────────────────────────────────────────────────────────
-let passwordVerified = false;
-
 async function checkPassword() {
+  const userName = document.getElementById('gateUser').value;
   const pw = document.getElementById('gatePassword').value;
-  if (!pw) return;
-  // Try a lightweight API call to validate the password
+  if (!userName || !pw) return;
+
   try {
     const res = await fetch('/api/staff', {
-      headers: { 'X-Diary-Password': pw }
+      headers: {
+        'X-Diary-Password': pw,
+        'X-Staff-Name': userName
+      }
     });
+    const data = await res.json();
     if (res.ok) {
-      PASSWORD = pw; // set the global so subsequent calls use it
+      PASSWORD = pw;
+      USER_NAME = data.user?.name || userName;
+      USER_ROLE = data.user?.role || 'barber';
+      passwordVerified = true;
       document.getElementById('gate').style.display = 'none';
       document.getElementById('app').classList.add('open');
-      passwordVerified = true;
+      setupUiForRole();
       loadStaffAndServices();
       loadDiary();
     } else {
@@ -550,13 +563,32 @@ async function checkPassword() {
   }
 }
 
+function setupUiForRole() {
+  // Show/hide Settings tab based on role
+  const settingsTab = document.getElementById('tabSettings');
+  if (settingsTab) {
+    settingsTab.style.display = USER_ROLE === 'admin' ? 'inline-block' : 'none';
+  }
+  // Update subtitle
+  const brandSub = document.querySelector('.topnav-brand .brand-sub');
+  if (brandSub) {
+    brandSub.textContent = 'Diary — ' + USER_NAME;
+  }
+}
+
 function logout() {
   document.getElementById('app').classList.remove('open');
   document.getElementById('gate').style.display = 'flex';
+  document.getElementById('gateUser').value = '';
   document.getElementById('gatePassword').value = '';
   document.getElementById('gateError').style.display = 'none';
+  PASSWORD = '';
+  USER_NAME = '';
+  USER_ROLE = '';
+  passwordVerified = false;
 }
 
+// Enter key on password triggers login
 document.getElementById('gatePassword')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') checkPassword();
 });
@@ -592,12 +624,17 @@ function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 // Alias for diary.html compat
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Staff & services
+// Auth headers helper
 // ─────────────────────────────────────────────────────────────────────────────
+function authHeaders() {
+  const h = { 'X-Diary-Password': PASSWORD };
+  if (USER_NAME) h['X-Staff-Name'] = USER_NAME;
+  return h;
+}
 async function loadStaffAndServices() {
   try {
     const res = await fetch('/api/staff', {
-      headers: { 'X-Diary-Password': PASSWORD }
+      headers: authHeaders()
     });
     const data = await res.json();
     state.staff = data.staff || [];
@@ -617,14 +654,25 @@ function populateStaffServiceDropdowns() {
   // Walk-in staff select
   const staffSel = document.getElementById('walkinStaff');
   if (staffSel) {
-    staffSel.innerHTML = '<option value="">Select barber…</option>' +
-      state.staff.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    if (USER_ROLE === 'barber') {
+      // Barbers can only book for themselves
+      const me = state.staff.find(s => s.name === USER_NAME);
+      staffSel.innerHTML = me ? `<option value="${me.id}">${me.name}</option>` : '<option value="">Select barber…</option>';
+    } else {
+      staffSel.innerHTML = '<option value="">Select barber…</option>' +
+        state.staff.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    }
   }
   // Time-off staff select
   const toStaffSel = document.getElementById('timeoffStaff');
   if (toStaffSel) {
-    toStaffSel.innerHTML = '<option value="">Select…</option>' +
-      state.staff.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    if (USER_ROLE === 'barber') {
+      const me = state.staff.find(s => s.name === USER_NAME);
+      toStaffSel.innerHTML = me ? `<option value="${me.id}">${me.name}</option>` : '<option value="">Select…</option>';
+    } else {
+      toStaffSel.innerHTML = '<option value="">Select…</option>' +
+        state.staff.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    }
   }
 }
 
@@ -679,7 +727,7 @@ async function loadDiary() {
 
   try {
     const res = await fetch(`/api/diary?date=${state.date}&view=${state.view}`, {
-      headers: { 'X-Diary-Password': PASSWORD }
+      headers: authHeaders()
     });
     const data = await res.json();
     state.bookings = data.bookings || [];
@@ -778,7 +826,7 @@ async function markAttendance(bookingId, status) {
   try {
     const res = await fetch('/api/attendance', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ booking_id: bookingId, status })
     });
     if (res.ok) loadDiary();
@@ -791,7 +839,7 @@ async function cancelBooking(bookingId) {
   try {
     const res = await fetch('/api/attendance', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ booking_id: bookingId, status: 'cancelled', cancellation_reason: reason || null })
     });
     if (res.ok) loadDiary();
@@ -815,7 +863,7 @@ async function loadStaff() {
   list.innerHTML = '<div class="loading">Loading…</div>';
   try {
     const res = await fetch('/api/staff', {
-      headers: { 'X-Diary-Password': PASSWORD }
+      headers: authHeaders()
     });
     const data = await res.json();
     state.staff = data.staff || [];
@@ -892,7 +940,7 @@ async function saveDurations(staffId) {
     await adminAction('set_service_durations', { staff_id: staffId, durations });
     delete durationsDirty[staffId];
     // Reload durations
-    const res = await fetch('/api/staff', { headers: { 'X-Diary-Password': PASSWORD } });
+    const res = await fetch('/api/staff', { headers: authHeaders() });
     const data = await res.json();
     state.durations = data.durations || [];
     renderStaff();
@@ -977,7 +1025,7 @@ async function loadStaffHours() {
     try {
       const res = await fetch('/api/admin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'get_availability', staff_id: s.id })
       });
       const data = await res.json();
@@ -1084,7 +1132,7 @@ async function loadTimeoff() {
   try {
     const res = await fetch('/api/admin', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'get_timeoff' })
     });
     const data = await res.json();
@@ -1156,7 +1204,7 @@ async function loadRecentManualBookings() {
     const endDate = new Date();
     const startDate = new Date(); startDate.setDate(startDate.getDate() - 14);
     const res = await fetch(`/api/diary?date=${startDate.toISOString().split('T')[0]}&view=weekly`, {
-      headers: { 'X-Diary-Password': PASSWORD }
+      headers: authHeaders()
     });
     const data = await res.json();
     const manualBookings = (data.bookings || []).filter(b => b.source === 'online'); // show all for now
@@ -1274,7 +1322,7 @@ async function onWalkinDateChange() {
 
   try {
     const res = await fetch(`/api/availability?date=${date}&staff_id=${staffId}&service_id=${serviceId}`, {
-      headers: { 'X-Diary-Password': PASSWORD }
+      headers: authHeaders()
     });
     const data = await res.json();
     loading.style.display = 'none';
@@ -1325,7 +1373,7 @@ function searchCustomer(q) {
     try {
       const res = await fetch('/api/admin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+        headers: { ...authHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'search_customers', q })
       });
       const data = await res.json();
@@ -1392,7 +1440,7 @@ async function submitWalkin(e) {
   try {
     const res = await fetch('/api/admin', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'add',
         service_id: state.selectedService,
@@ -1426,7 +1474,7 @@ async function submitWalkin(e) {
 async function adminAction(action, params) {
   const res = await fetch('/api/admin', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Diary-Password': PASSWORD },
+    headers: { ...authHeaders(), 'Content-Type': 'application/json' },
     body: JSON.stringify({ action, ...params })
   });
   if (!res.ok) throw new Error(await res.text());
