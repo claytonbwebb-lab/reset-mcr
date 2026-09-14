@@ -1,8 +1,11 @@
 export async function requireAuth(headers, supabase) {
-  const staffName = headers['x-staff-name'];
+  let staffName = headers['x-staff-name'];
   const staffId = headers['x-staff-id'];
   const password = headers['x-diary-password'];
   const envPassword = process.env.DIARY_PASSWORD;
+
+  // Normalise spelling aliases
+  if (staffName && staffName.toLowerCase() === 'jayden') staffName = 'Jaden';
 
   let resolvedStaffId = null;
 
