@@ -89,7 +89,7 @@ export default async function handler(req, res) {
         const breakE = a.break_end ? new Date('1970-01-01T' + a.break_end) : null;
         let dayMins = (end - start) / 60000;
         if (breakS && breakE) dayMins -= (breakE - breakS) / 60000;
-        totalAvailMins += dayMins * 6; // 6 working days
+        totalAvailMins += dayMins;
       }
 
       capacity = totalAvailMins > 0 ? Math.round((bookedMins / totalAvailMins) * 100) : 0;
