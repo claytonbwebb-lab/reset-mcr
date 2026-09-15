@@ -599,8 +599,7 @@ function setupUiForRole() {
     if (meBtn) meBtn.textContent = USER_NAME;
     const otherBtn = document.getElementById('filterOther');
     if (otherBtn) {
-      const other = state.staff.find(s => s.name !== USER_NAME);
-      otherBtn.textContent = other ? other.name : 'Other';
+      otherBtn.textContent = 'Jaden';
     }
   }
   // Update subtitle
