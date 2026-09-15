@@ -312,6 +312,13 @@ function setupDetailsForm() {
 
   if (!form) return;
 
+  // Show recurring booking options
+  if (recurringWrap) {
+    recurringWrap.style.display = 'block';
+    if (recurringQ) recurringQ.textContent = 'Would you like to make this a regular appointment?';
+  }
+  if (intervalOptions) intervalOptions.style.display = 'flex';
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 

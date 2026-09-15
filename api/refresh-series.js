@@ -144,7 +144,15 @@ async function sendEmail(booking, customer, service, staffName) {
 }
 
 export default async function handler(req, res) {
-  // Can be triggered by cron or manual request
+  // Simple auth: require CRON_SECRET header (set in Vercel env vars)
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret) {
+    const provided = req.headers['x-cron-secret'] || req.headers['authorization'];
+    if (!provided || provided !== `Bearer ${cronSecret}`) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+  }
+
   const start = Date.now();
   const results = [];
 
