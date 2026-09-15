@@ -238,7 +238,7 @@
   <select id="gateUser" style="text-align:center;text-align-last:center;">
     <option value="">— Select —</option>
     <option value="Jack">Jack</option>
-    <option value="Jayden">Jayden</option>
+    <option value="Jayden">Jaden</option>
   </select>
   <input type="password" id="gatePassword" placeholder="Password" />
   <button onclick="checkPassword()">Open diary</button>
@@ -312,6 +312,7 @@
       <button class="settings-tab active" id="stTabHours" onclick="switchSettingsTab('hours')">Hours</button>
       <button class="settings-tab" id="stTabTimeoff" onclick="switchSettingsTab('timeoff')">Time Off</button>
       <button class="settings-tab" id="stTabBooking" onclick="switchSettingsTab('booking')">Bookings</button>
+      <button class="settings-tab" id="stTabRecurring" onclick="switchSettingsTab('recurring')">Recurring</button>
     </div>
 
     <!-- ── Staff ── -->
@@ -352,6 +353,15 @@
       </div>
       <p style="color:var(--muted);font-size:14px;margin:0 0 16px;">Use this to add a booking on behalf of a customer. confirmation email will NOT be sent for manual bookings.</p>
       <div id="recentManualBookings"><div class="loading">Loading…</div></div>
+    </div>
+
+    <!-- ── Recurring Series ── -->
+    <div id="settingsRecurring" style="display:none">
+      <div class="section-header">
+        <h2>Active Recurring Series</h2>
+      </div>
+      <p style="color:var(--muted);font-size:14px;margin:0 0 16px;">Recurring bookings continue indefinitely until cancelled here. Stars (★) in the diary show regulars.</p>
+      <div id="recurringSeriesList"><div class="loading">Loading series…</div></div>
     </div>
 
   </div>
@@ -607,7 +617,7 @@ function switchAppTab(tab) {
 
 function switchSettingsTab(tab) {
   state.settingsTab = tab;
-  ['staff','hours','timeoff','booking'].forEach(t => {
+  ['staff','hours','timeoff','booking','recurring'].forEach(t => {
     const tabEl = document.getElementById('stTab' + capitalize(t));
     if (tabEl) tabEl.classList.toggle('active', t === tab);
     const viewEl = document.getElementById('settings' + capitalize(t));
@@ -617,6 +627,7 @@ function switchSettingsTab(tab) {
   if (tab === 'hours') loadStaffHours();
   if (tab === 'timeoff') loadTimeoff();
   if (tab === 'booking') loadRecentManualBookings();
+  if (tab === 'recurring') loadRecurringSeries();
 }
 
 function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
@@ -760,7 +771,7 @@ function renderDaily() {
         <div class="booking-card-header">
           <span class="booking-card-time">${formatTime(b.start)}</span>
           <span class="status-badge ${b.status}">${b.status.replace('_',' ')}</span>
-          <span class="booking-card-source ${b.is_recurring ? '' : 'walk_in'}">${b.is_recurring ? b.recurring_interval : (b.source || 'online')}</span>
+          <span class="booking-card-source ${b.is_recurring ? 'walk_in' : (b.source === 'walk_in' ? 'walk_in' : '')}">${b.is_recurring ? '★ ' + b.recurring_interval : (b.source === 'walk_in' ? 'Walk-in' : 'Online')}</span>
         </div>
         <div class="booking-card-customer">${b.customer_name || 'Unknown'}</div>
         <div class="booking-card-service">${b.service_name}</div>
@@ -1465,6 +1476,64 @@ async function submitWalkin(e) {
     status.textContent = 'Error. Try again.';
     status.classList.add('error');
     document.getElementById('walkinSubmitBtn').disabled = false;
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Recurring Series Management
+// ─────────────────────────────────────────────────────────────────────────────
+async function loadRecurringSeries() {
+  const list = document.getElementById('recurringSeriesList');
+  list.innerHTML = '<div class="loading">Loading series…</div>';
+  try {
+    const res = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'list_series' })
+    });
+    const data = await res.json();
+    const series = data.series || [];
+    if (!series.length) {
+      list.innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;">No active recurring series.</p>';
+      return;
+    }
+    list.innerHTML = series.map(s => {
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      return `
+      <div class="timeoff-item" style="margin-bottom:10px;">
+        <div class="timeoff-item-left">
+          <div class="timeoff-item-dates">★ ${s.interval} — ${s.customer?.name || 'Unknown'}</div>
+          <div class="timeoff-item-reason">
+            ${s.customer?.email || ''} · ${s.service?.name || 'Unknown service'} ·
+            ${days[s.preferred_day_of_week || 0]}s at ${s.preferred_time || '—'}
+            with ${s.staff?.name || 'any barber'}
+          </div>
+          <div class="timeoff-item-staff">${s.future_bookings || 0} future bookings</div>
+        </div>
+        <button class="btn btn-danger btn-small" onclick="cancelSeries('${s.id}')">Cancel Series</button>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<p style="color:var(--red);">Failed to load recurring series.</p>';
+  }
+}
+
+async function cancelSeries(seriesId) {
+  if (!confirm('Cancel this recurring series? All future bookings will be cancelled too.')) return;
+  try {
+    const res = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { ...authHeaders(), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'cancel_series', series_id: seriesId })
+    });
+    if (res.ok) {
+      loadRecurringSeries();
+      loadDiary();
+    } else {
+      alert('Failed to cancel series.');
+    }
+  } catch (e) {
+    alert('Error cancelling series.');
   }
 }
 

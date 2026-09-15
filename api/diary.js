@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     let query = supabase
       .from('bookings')
       .select(`
-        id, start_datetime, end_datetime, status, is_recurring, recurring_interval,
+        id, start_datetime, end_datetime, status, is_recurring, recurring_interval, recurring_series_id,
         customer:customer_id(name, email, mobile),
         staff:staff_id(name, role),
         service:service_id(name)
@@ -106,6 +106,7 @@ export default async function handler(req, res) {
       start: b.start_datetime,
       end: b.end_datetime,
       status: b.status,
+      recurring_series_id: b.recurring_series_id,
       is_recurring: b.is_recurring,
       recurring_interval: b.recurring_interval
     }));

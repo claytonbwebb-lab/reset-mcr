@@ -280,6 +280,87 @@ export default async function handler(req, res) {
         return res.status(200).json({ customers: data || [] });
       }
 
+      // ─── Recurring Series Management ────────────────────────────────────────
+
+      case 'list_series': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can manage recurring series' });
+        const { customer_id } = params;
+        let query = supabase
+          .from('recurring_series')
+          .select(`
+            id,
+            interval,
+            preferred_time,
+            preferred_day_of_week,
+            status,
+            created_at,
+            customer:customer_id(name, email),
+            service:service_id(name),
+            staff:preferred_staff_id(name)
+          `)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
+        if (customer_id) query = query.eq('customer_id', customer_id);
+        const { data, error } = await query;
+        if (error) throw error;
+        // Get count of future bookings per series
+        const enriched = await Promise.all((data || []).map(async s => {
+          const { count } = await supabase
+            .from('bookings')
+            .select('id', { count: 'exact', head: true })
+            .eq('recurring_series_id', s.id)
+            .eq('status', 'confirmed')
+            .gte('start_datetime', new Date().toISOString());
+          return { ...s, future_bookings: count || 0 };
+        }));
+        return res.status(200).json({ series: enriched });
+      }
+
+      case 'cancel_series': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can cancel recurring series' });
+        const { series_id } = params;
+        if (!series_id) return res.status(400).json({ error: 'series_id required' });
+
+        // Cancel the series
+        await supabase
+          .from('recurring_series')
+          .update({ status: 'cancelled' })
+          .eq('id', series_id);
+
+        // Cancel all future un-attended bookings in this series
+        await supabase
+          .from('bookings')
+          .update({
+            status: 'cancelled',
+            cancellation_reason: 'Series cancelled by admin',
+            cancelled_by: 'admin',
+            cancellation_series: 'all'
+          })
+          .eq('recurring_series_id', series_id)
+          .eq('status', 'confirmed')
+          .gte('start_datetime', new Date().toISOString());
+
+        return res.status(200).json({ success: true });
+      }
+
+      case 'cancel_single_recurring': {
+        if (auth.role !== 'admin') return res.status(403).json({ error: 'Only admin can cancel bookings' });
+        const { booking_id } = params;
+        if (!booking_id) return res.status(400).json({ error: 'booking_id required' });
+
+        await supabase
+          .from('bookings')
+          .update({
+            status: 'cancelled',
+            cancellation_reason: 'Cancelled by admin',
+            cancelled_by: 'admin',
+            cancellation_series: 'single'
+          })
+          .eq('id', booking_id);
+
+        return res.status(200).json({ success: true });
+      }
+
       default:
         return res.status(400).json({ error: 'Unknown action' });
     }
