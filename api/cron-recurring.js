@@ -21,7 +21,8 @@ async function findSlot(series, targetDate, durationMins) {
   if (dow !== preferred_day_of_week) return null;
 
   const dateStr = targetDate.toISOString().split('T')[0];
-  const [h, m] = preferred_time.split(':').map(Number);
+  const timeOnly = preferred_time.split(':').slice(0, 2).join(':'); // HH:MM without seconds
+  const [h, m] = timeOnly.split(':').map(Number);
   const preferredMins = h * 60 + m;
 
   async function isSlotFree(staffId, timeStr) {
