@@ -8,7 +8,8 @@
     { "source": "/api/attendance", "destination": "/api/attendance.js" },
     { "source": "/api/walkin", "destination": "/api/walkin.js" },
     { "source": "/api/admin", "destination": "/api/admin.js" },
-    { "source": "/api/refresh-series", "destination": "/api/refresh-series.js" }
+    { "source": "/api/refresh-series", "destination": "/api/refresh-series.js" },
+    { "source": "/api/cron-recurring", "destination": "/api/cron-recurring.js" }
   ],
   "headers": [
     {
