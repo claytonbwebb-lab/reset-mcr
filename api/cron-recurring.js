@@ -206,7 +206,7 @@ export default async function handler(req, res) {
             end_datetime: endIso,
             status: 'confirmed',
             recurring_series_id: series.id,
-            source: 'recurring'
+            source: 'online'
           });
 
         if (!insertErr) generated++;
