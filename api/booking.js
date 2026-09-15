@@ -318,43 +318,85 @@ export default async function handler(req, res) {
       const dayOfWeek = startDate.getDay();
       const timeStr = startDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Europe/London' });
 
-      const { data: series, error: seriesErr } = await supabase
-        .from('recurring_series')
-        .insert({
-          customer_id: customer.id,
-          service_id,
-          preferred_staff_id: resolvedStaffId,
-          interval: recurring_interval,
-          preferred_time: timeStr,
-          preferred_day_of_week: dayOfWeek,
-          status: 'active'
-        })
-        .select()
-        .single();
+      try {
+        const { data: series, error: seriesErr } = await supabase
+          .from('recurring_series')
+          .insert({
+            customer_id: customer.id,
+            service_id,
+            preferred_staff_id: resolvedStaffId,
+            interval: recurring_interval,
+            preferred_time: timeStr,
+            preferred_day_of_week: dayOfWeek,
+            status: 'active'
+          })
+          .select()
+          .single();
 
-      if (seriesErr) throw seriesErr;
-      seriesId = series.id;
+        if (seriesErr) {
+          console.warn('Recurring series creation failed (schema not ready?):', seriesErr.message);
+        } else {
+          seriesId = series.id;
+        }
+      } catch (e) {
+        console.warn('Recurring series creation failed (schema not ready?):', e.message);
+      }
     }
 
     // ── Create first booking ────────────────────────────────────────────────
-    const { data: booking, error: bookingError } = await supabase
-      .from('bookings')
-      .insert({
+    let bookingPayload = {
+      customer_id: customer.id,
+      staff_id: resolvedStaffId,
+      service_id,
+      start_datetime: startDate.toISOString(),
+      end_datetime: endDate.toISOString(),
+      status: 'confirmed',
+      source: 'online'
+    };
+
+    // Only add recurring fields if series was created (schema may not be ready)
+    if (seriesId) {
+      try {
+        bookingPayload.is_recurring = true;
+        bookingPayload.recurring_interval = recurring_interval;
+        bookingPayload.recurring_series_id = seriesId;
+      } catch (_) {}
+    }
+
+    let booking, bookingError;
+    try {
+      const result = await supabase
+        .from('bookings')
+        .insert(bookingPayload)
+        .select()
+        .single();
+      booking = result.data;
+      bookingError = result.error;
+    } catch (e) {
+      // If insert fails due to missing columns, try without recurring fields
+      console.warn('Booking insert failed, retrying without recurring fields:', e.message);
+      const fallbackPayload = {
         customer_id: customer.id,
         staff_id: resolvedStaffId,
         service_id,
         start_datetime: startDate.toISOString(),
         end_datetime: endDate.toISOString(),
         status: 'confirmed',
-        is_recurring: is_recurring || false,
-        recurring_interval: recurring_interval || null,
-        recurring_series_id: seriesId,
         source: 'online'
-      })
-      .select()
-      .single();
+      };
+      const result = await supabase
+        .from('bookings')
+        .insert(fallbackPayload)
+        .select()
+        .single();
+      booking = result.data;
+      bookingError = result.error;
+    }
 
-    if (bookingError) throw bookingError;
+    if (bookingError || !booking) {
+      console.error('Booking insert error:', bookingError);
+      return res.status(500).json({ error: 'Failed to create booking. Please try again or call Reset MCR on 07702 598780.' });
+    }
 
     // ── Fetch for emails ────────────────────────────────────────────────────
     const { data: service } = await supabase.from('services').select('name').eq('id', service_id).single();
@@ -372,14 +414,17 @@ export default async function handler(req, res) {
 
     // ── Generate future bookings for recurring series ──────────────────────
     if (seriesId) {
-      // Run in background — don't block response
-      const { data: series } = await supabase
-        .from('recurring_series')
-        .select('*')
-        .eq('id', seriesId)
-        .single();
-      if (series) {
-        await generateSeriesBookings(supabase, series, startDate);
+      try {
+        const { data: series } = await supabase
+          .from('recurring_series')
+          .select('*')
+          .eq('id', seriesId)
+          .single();
+        if (series) {
+          await generateSeriesBookings(supabase, series, startDate);
+        }
+      } catch (e) {
+        console.warn('Series booking generation failed:', e.message);
       }
     }
 
