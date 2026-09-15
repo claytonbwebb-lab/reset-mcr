@@ -821,8 +821,8 @@ function renderWeekly() {
       </div>
       ${!dayBks.length ? '<span class="week-day-count">—</span>' : ''}
       ${dayBks.slice(0, 4).map(b => `
-        <div class="week-slot" title="${b.customer_name} — ${b.service_name}">
-          <span class="customer-name">${formatTime(b.start)}</span><br/>${b.customer_name} — ${b.service_name}
+        <div class="week-slot" title="${b.customer_name} — ${b.service_name}${b.is_recurring ? ' (' + b.recurring_interval + ')' : ''}">
+          <span class="customer-name">${formatTime(b.start)}</span><br/>${b.is_recurring ? '★ ' : ''}${b.customer_name} — ${b.service_name}
         </div>`).join('')}
       ${dayBks.length > 4 ? `<div class="week-day-count">+${dayBks.length - 4} more</div>` : ''}
     </div>`;
