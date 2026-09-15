@@ -115,8 +115,12 @@
     .week-day-count{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-top:4px}
     .week-slot{display:block;background:rgba(184,155,117,.12);border:1px solid rgba(184,155,117,.3);border-radius:8px;padding:6px 8px;margin-top:6px;font-size:12px;font-weight:700;color:#fff;cursor:pointer;transition:.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .week-slot:hover{border-color:var(--gold);background:rgba(184,155,117,.2)}
+    .week-slot.slot-mine{background:rgba(184,155,117,.15);border-color:rgba(184,155,117,.45)}
+    .week-slot.slot-mine:hover{border-color:var(--gold);background:rgba(184,155,117,.25)}
+    .week-slot.slot-other{background:rgba(100,149,237,.12);border-color:rgba(100,149,237,.35);color:#e8f0ff}
+    .week-slot.slot-other:hover{border-color:rgba(100,149,237,.7);background:rgba(100,149,237,.2)}
     .week-slot.customer-name{font-weight:700;color:var(--gold2)}
-    .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+    .booking-card.highlighted{border-color:var(--gold);background:rgba(184,155,117,.08);box-shadow:0 0 0 2px rgba(184,155,117,.3)}
     .empty-state h2{font-family:Oswald,sans-serif;text-transform:uppercase;font-size:28px;color:#fff;margin:0 0 10px}
     .empty-state p{margin:0}
 
@@ -259,6 +263,11 @@
       <button class="topnav-tab" id="tabSettings" onclick="switchAppTab('settings')">Settings</button>
     </div>
     <div class="topnav-right">
+      <div class="staff-filter" id="staffFilter" style="display:none;gap:4px;background:#0d0d0d;border:1px solid var(--line);border-radius:999px;padding:5px;margin-right:8px;" title="Filter bookings">
+        <button class="filter-btn active" id="filterAll" onclick="setStaffFilter('all')" style="padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;border:none;background:var(--gold);color:#060606;cursor:pointer;">Both</button>
+        <button class="filter-btn" id="filterMe" onclick="setStaffFilter('me')" style="padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;border:none;background:transparent;color:var(--muted);cursor:pointer;">Just me</button>
+        <button class="filter-btn" id="filterOther" onclick="setStaffFilter('other')" style="padding:7px 14px;border-radius:999px;font-size:12px;font-weight:800;border:none;background:transparent;color:var(--muted);cursor:pointer;">Just other</button>
+      </div>
       <button class="logout" onclick="logout()">Log out</button>
     </div>
   </nav>
@@ -534,7 +543,9 @@ const state = {
   selectedSlot: null,
   selectedService: null,
   selectedStaff: null,
-  walkinStep: 1
+  walkinStep: 1,
+  staffFilter: 'all',
+  highlightBookingId: null
 };
 
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -579,11 +590,42 @@ function setupUiForRole() {
   if (settingsTab) {
     settingsTab.style.display = USER_ROLE === 'admin' ? 'inline-block' : 'none';
   }
+  // Show staff filter for all logged-in users
+  const filterEl = document.getElementById('staffFilter');
+  if (filterEl) {
+    filterEl.style.display = 'flex';
+    // Rename "Just me" button to actual name
+    const meBtn = document.getElementById('filterMe');
+    if (meBtn) meBtn.textContent = USER_NAME;
+    const otherBtn = document.getElementById('filterOther');
+    if (otherBtn) {
+      const other = state.staff.find(s => s.name !== USER_NAME);
+      otherBtn.textContent = other ? other.name : 'Other';
+    }
+  }
   // Update subtitle
   const brandSub = document.querySelector('.topnav-brand .brand-sub');
   if (brandSub) {
     brandSub.textContent = 'Diary — ' + USER_NAME;
   }
+}
+
+function setStaffFilter(mode) {
+  state.staffFilter = mode;
+  // Update button styles
+  document.getElementById('filterAll').style.background = mode === 'all' ? 'var(--gold)' : 'transparent';
+  document.getElementById('filterAll').style.color = mode === 'all' ? '#060606' : 'var(--muted)';
+  document.getElementById('filterMe').style.background = mode === 'me' ? 'var(--gold)' : 'transparent';
+  document.getElementById('filterMe').style.color = mode === 'me' ? '#060606' : 'var(--muted)';
+  document.getElementById('filterOther').style.background = mode === 'other' ? 'var(--gold)' : 'transparent';
+  document.getElementById('filterOther').style.color = mode === 'other' ? '#060606' : 'var(--muted)';
+  loadDiary();
+}
+
+// Staff colour map for "Both" view
+function getStaffColorClass(name) {
+  if (name === USER_NAME) return 'slot-mine';
+  return 'slot-other';
 }
 
 function logout() {
@@ -758,15 +800,26 @@ function renderDaily() {
   document.getElementById('loadingDaily').style.display = 'none';
   const list = document.getElementById('bookingsList');
   const empty = document.getElementById('emptyDaily');
-  if (!state.bookings.length) {
+
+  // Filter by staff if needed
+  let filtered = state.bookings;
+  if (state.staffFilter === 'me') {
+    filtered = state.bookings.filter(b => b.staff_name === USER_NAME);
+  } else if (state.staffFilter === 'other') {
+    filtered = state.bookings.filter(b => b.staff_name !== USER_NAME);
+  }
+
+  if (!filtered.length) {
     list.style.display = 'none';
     empty.style.display = 'block';
+    empty.querySelector('h2').textContent = state.staffFilter === 'me' ? 'No bookings for you' : 'No bookings';
+    empty.querySelector('p').textContent = state.staffFilter === 'me' ? 'Nothing scheduled for you on this day.' : 'Nothing scheduled for this day.';
     return;
   }
   empty.style.display = 'none';
   list.style.display = 'flex';
-  list.innerHTML = state.bookings.map(b => `
-    <div class="booking-card">
+  list.innerHTML = filtered.map(b => `
+    <div class="booking-card ${state.highlightBookingId === b.id ? 'highlighted' : ''}" id="booking-${b.id}">
       <div>
         <div class="booking-card-header">
           <span class="booking-card-time">${formatTime(b.start)}</span>
@@ -776,7 +829,7 @@ function renderDaily() {
         <div class="booking-card-customer">${b.customer_name || 'Unknown'}</div>
         <div class="booking-card-service">${b.service_name}</div>
         <div class="booking-card-meta">
-          <span>${b.staff_name}</span>
+          <span style="color:${b.staff_name === USER_NAME ? 'var(--gold2)' : 'var(--muted)'}">${b.staff_name === USER_NAME ? 'You' : b.staff_name}</span>
           <span>${Math.round((new Date(b.end) - new Date(b.start)) / 60000)} min</span>
           ${b.customer_email ? `<span>${b.customer_email}</span>` : ''}
           ${b.customer_mobile ? `<span>${b.customer_mobile}</span>` : ''}
@@ -790,6 +843,21 @@ function renderDaily() {
         ` : ''}
       </div>
     </div>`).join('');
+
+  // Scroll to highlighted if set
+  if (state.highlightBookingId) {
+    setTimeout(() => {
+      const el = document.getElementById('booking-' + state.highlightBookingId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Clear highlight after 3 seconds
+        setTimeout(() => {
+          state.highlightBookingId = null;
+          el.classList.remove('highlighted');
+        }, 3000);
+      }
+    }, 100);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -811,7 +879,13 @@ function renderWeekly() {
   }
   const today = new Date().toLocaleDateString('en-GB',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).split('/').reverse().join('-');
   document.getElementById('weekGrid').innerHTML = days.map(day => {
-    const dayBks = state.bookings.filter(b => b.start.startsWith(day));
+    let dayBks = state.bookings.filter(b => b.start.startsWith(day));
+    // Filter by staff
+    if (state.staffFilter === 'me') {
+      dayBks = dayBks.filter(b => b.staff_name === USER_NAME);
+    } else if (state.staffFilter === 'other') {
+      dayBks = dayBks.filter(b => b.staff_name !== USER_NAME);
+    }
     const d = new Date(day + 'T00:00:00');
     return `
     <div class="week-day${day === today ? ' is-today' : ''}">
@@ -820,13 +894,28 @@ function renderWeekly() {
         <span class="week-day-date">${d.getDate()}</span>
       </div>
       ${!dayBks.length ? '<span class="week-day-count">—</span>' : ''}
-      ${dayBks.slice(0, 4).map(b => `
-        <div class="week-slot" title="${b.customer_name} — ${b.service_name}${b.is_recurring ? ' (' + b.recurring_interval + ')' : ''}">
+      ${dayBks.slice(0, 4).map(b => {
+        const colorClass = state.staffFilter === 'all' ? getStaffColorClass(b.staff_name) : '';
+        return `
+        <div class="week-slot ${colorClass}" title="${b.customer_name} — ${b.service_name}${b.is_recurring ? ' (' + b.recurring_interval + ')' : ''}" onclick="clickWeekSlot('${b.id}', '${day}')">
           <span class="customer-name">${formatTime(b.start)}</span><br/>${b.is_recurring ? '★ ' : ''}${b.customer_name} — ${b.service_name}
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
       ${dayBks.length > 4 ? `<div class="week-day-count">+${dayBks.length - 4} more</div>` : ''}
     </div>`;
   }).join('');
+}
+
+function clickWeekSlot(bookingId, dayStr) {
+  state.date = dayStr;
+  state.view = 'daily';
+  state.highlightBookingId = bookingId;
+  document.getElementById('dailyBtn').classList.add('active');
+  document.getElementById('weeklyBtn').classList.remove('active');
+  document.getElementById('dailyView').style.display = 'block';
+  document.getElementById('weeklyView').style.display = 'none';
+  document.getElementById('capacityBar').style.display = 'none';
+  loadDiary();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
