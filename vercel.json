@@ -11,6 +11,9 @@
     { "source": "/api/refresh-series", "destination": "/api/refresh-series.js" },
     { "source": "/api/cron-recurring", "destination": "/api/cron-recurring.js" }
   ],
+  "crons": [
+    { "path": "/api/cron-recurring", "schedule": "0 6 * * *" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
