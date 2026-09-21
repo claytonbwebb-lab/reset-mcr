@@ -15,8 +15,22 @@ const INTERVAL_DAYS = {
   '3weekly': 21,
   monthly: 30  // Approx 4 weeks
 };
+
+function normaliseTime(value) {
+  return String(value || '').split(':').slice(0, 2).join(':');
+}
+
+function addInterval(date, interval) {
+  const next = new Date(date);
+  if (interval === 'monthly') {
+    next.setUTCMonth(next.getUTCMonth() + 1);
+  } else {
+    next.setUTCDate(next.getUTCDate() + INTERVAL_DAYS[interval]);
+  }
+  return next;
+}
 const MAX_ADVANCE_DAYS = 28; // Customer bookings: max 4 weeks ahead
-const PREBOOK_AHEAD_DAYS = 28; // How far to pre-book recurring appointments
+const PREBOOK_AHEAD_DAYS = 62; // Keep recurring appointments populated roughly 2 months ahead
 
 // Formatting helpers
 function formatDate(dateStr) {
@@ -69,12 +83,12 @@ async function findRecurringSlot(supabase, series, targetDate, durationMins, pre
   }
 
   const dateStr = targetDate.toISOString().split('T')[0];
-  const startTimeStr = preferred_time;
+  const startTimeStr = normaliseTime(preferred_time);
 
   // Helper to check if a slot is free
   async function isSlotFree(staffId, timeStr) {
-    const startIso = new Date(`${dateStr}T${timeStr}:00`).toISOString();
-    const endIso = new Date(new Date(`${dateStr}T${timeStr}:00`).getTime() + durationMins * 60000).toISOString();
+    const startIso = ukLocalToUtcIso(`${dateStr}T${normaliseTime(timeStr)}:00`);
+    const endIso = new Date(new Date(startIso).getTime() + durationMins * 60000).toISOString();
 
     // Check staff availability for this day
     const { data: avail } = await supabase
@@ -204,7 +218,7 @@ async function generateSeriesBookings(supabase, series, startFrom = null) {
   const bookings = [];
 
   while (cursor <= horizon) {
-    cursor = new Date(cursor.getTime() + days * 86400000);
+    cursor = addInterval(cursor, interval);
     if (cursor > horizon) break;
 
     const slot = await findRecurringSlot(supabase, series, cursor, durationMins, preferred_staff_id);
@@ -214,8 +228,8 @@ async function generateSeriesBookings(supabase, series, startFrom = null) {
     }
 
     const dateStr = cursor.toISOString().split('T')[0];
-    const startIso = new Date(`${dateStr}T${slot.time}:00`).toISOString();
-    const endIso = new Date(new Date(`${dateStr}T${slot.time}:00`).getTime() + durationMins * 60000).toISOString();
+    const startIso = ukLocalToUtcIso(`${dateStr}T${normaliseTime(slot.time)}:00`);
+    const endIso = new Date(new Date(startIso).getTime() + durationMins * 60000).toISOString();
 
     const { data: booking, error } = await supabase
       .from('bookings')
@@ -227,6 +241,8 @@ async function generateSeriesBookings(supabase, series, startFrom = null) {
         end_datetime: endIso,
         status: 'confirmed',
         recurring_series_id: seriesId,
+        is_recurring: true,
+        recurring_interval: interval,
         source: 'online'
       })
       .select()

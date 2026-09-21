@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { readFileSync } from 'fs';
 
 const key = readFileSync(process.env.HOME + '/.openclaw-credentials-backup/resetmcr-supabase-service-role.txt', 'utf8').trim();
-const url = 'https://awvuhjeajygltoxmesty.supabase.co';
+const url = 'https://awvuhjeajygltoxmtesy.supabase.co';
 
 const supabase = createClient(url, key, {
   auth: { persistSession: false }

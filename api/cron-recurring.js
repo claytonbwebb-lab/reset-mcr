@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { ukLocalToUtcIso } from './_ukTime.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -12,7 +13,22 @@ const INTERVAL_DAYS = {
   monthly: 30
 };
 
-const PREBOOK_AHEAD_DAYS = 42; // 6 weeks
+const PREBOOK_AHEAD_DAYS = 62; // Keep recurring appointments populated roughly 2 months ahead
+
+function normaliseTime(value) {
+  return String(value || '').split(':').slice(0, 2).join(':');
+}
+
+function addInterval(date, interval) {
+  const next = new Date(date);
+  if (interval === 'monthly') {
+    next.setUTCMonth(next.getUTCMonth() + 1);
+  } else {
+    next.setUTCDate(next.getUTCDate() + INTERVAL_DAYS[interval]);
+  }
+  return next;
+}
+
 
 // — Find best available slot for a recurring booking —
 async function findSlot(series, targetDate, durationMins) {
@@ -21,13 +37,13 @@ async function findSlot(series, targetDate, durationMins) {
   if (dow !== preferred_day_of_week) return null;
 
   const dateStr = targetDate.toISOString().split('T')[0];
-  const timeOnly = preferred_time.split(':').slice(0, 2).join(':'); // HH:MM without seconds
+  const timeOnly = normaliseTime(preferred_time); // HH:MM without seconds
   const [h, m] = timeOnly.split(':').map(Number);
   const preferredMins = h * 60 + m;
 
   async function isSlotFree(staffId, timeStr) {
-    const startIso = new Date(`${dateStr}T${timeStr}:00`).toISOString();
-    const endIso   = new Date(new Date(`${dateStr}T${timeStr}:00`).getTime() + durationMins * 60000).toISOString();
+    const startIso = ukLocalToUtcIso(`${dateStr}T${normaliseTime(timeStr)}:00`);
+    const endIso   = new Date(new Date(startIso).getTime() + durationMins * 60000).toISOString();
 
     // Staff availability
     const { data: avail } = await supabase
@@ -77,8 +93,8 @@ async function findSlot(series, targetDate, durationMins) {
   }
 
   // Preferred staff @ preferred time
-  if (preferred_staff_id && await isSlotFree(preferred_staff_id, preferred_time)) {
-    return { staff_id: preferred_staff_id, time: preferred_time };
+  if (preferred_staff_id && await isSlotFree(preferred_staff_id, timeOnly)) {
+    return { staff_id: preferred_staff_id, time: timeOnly };
   }
 
   // Any staff @ preferred time
@@ -88,7 +104,7 @@ async function findSlot(series, targetDate, durationMins) {
     .order('created_at');
   for (const s of activeStaff || []) {
     if (s.id === preferred_staff_id) continue;
-    if (await isSlotFree(s.id, preferred_time)) return { staff_id: s.id, time: preferred_time };
+    if (await isSlotFree(s.id, timeOnly)) return { staff_id: s.id, time: timeOnly };
   }
 
   // ±30/60 min with preferred staff
@@ -116,9 +132,13 @@ async function findSlot(series, targetDate, durationMins) {
 }
 
 export default async function handler(req, res) {
-  const cronToken = req.headers['x-cron-secret'];
-  if (cronToken !== process.env.CRON_SECRET) {
-    return res.status(401).json({ error: 'Unauthorized' });
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret) {
+    const headerSecret = req.headers['x-cron-secret'];
+    const bearer = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (headerSecret !== cronSecret && bearer !== cronSecret) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
   }
 
   try {
@@ -162,7 +182,7 @@ export default async function handler(req, res) {
       // Advance to next occurrence after today (so we don't re-create past bookings)
       const today = new Date();
       while (cursor < today) {
-        cursor = new Date(cursor.getTime() + days * 86400000);
+        cursor = addInterval(cursor, series.interval);
       }
 
       // Fill out to 6 weeks ahead
@@ -182,8 +202,8 @@ export default async function handler(req, res) {
         if (!exists) {
           const slot = await findSlot(series, cursor, durationMins);
           if (slot) {
-            const startIso = new Date(`${dateStr}T${slot.time}:00`).toISOString();
-            const endIso   = new Date(new Date(`${dateStr}T${slot.time}:00`).getTime() + durationMins * 60000).toISOString();
+            const startIso = ukLocalToUtcIso(`${dateStr}T${normaliseTime(slot.time)}:00`);
+            const endIso   = new Date(new Date(startIso).getTime() + durationMins * 60000).toISOString();
 
             const { error: insErr } = await supabase.from('bookings').insert({
               customer_id: series.customer_id,
@@ -193,13 +213,15 @@ export default async function handler(req, res) {
               end_datetime: endIso,
               status: 'confirmed',
               recurring_series_id: series.id,
+              is_recurring: true,
+              recurring_interval: series.interval,
               source: 'online'
             });
             if (!insErr) generated++;
           }
         }
 
-        cursor = new Date(cursor.getTime() + days * 86400000);
+        cursor = addInterval(cursor, series.interval);
       }
 
       results.push({ series_id: series.id, generated });

@@ -19,12 +19,29 @@ function getBstOffsetMs(date) {
   return (date >= bstStart && date < bstEnd) ? 3600000 : 0;
 }
 
+function parseLocalParts(dateStr) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?$/.exec(dateStr);
+  if (!match) return null;
+  return {
+    year: Number(match[1]),
+    month: Number(match[2]),
+    day: Number(match[3]),
+    hour: Number(match[4]),
+    minute: Number(match[5]),
+    second: Number(match[6] || 0)
+  };
+}
+
 /**
  * Convert a UK-local datetime string (YYYY-MM-DDTHH:mm:ss) to a UTC Date.
- * The server currently treats it as UTC (wrong). This subtracts BST offset.
+ * Date strings without a timezone are parsed manually so this works the same
+ * on UTC, UK-time, and Vercel hosts.
  */
 export function ukLocalToUtc(dateStr) {
-  const asUtc = new Date(dateStr);
+  const parts = parseLocalParts(dateStr);
+  if (!parts) return new Date(dateStr);
+
+  const asUtc = new Date(Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second));
   const offsetMs = getBstOffsetMs(asUtc);
   return new Date(asUtc.getTime() - offsetMs);
 }
