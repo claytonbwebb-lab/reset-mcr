@@ -13,7 +13,7 @@ const INTERVAL_DAYS = {
   weekly: 7,
   fortnightly: 14,
   '3weekly': 21,
-  monthly: 30  // Approx 4 weeks
+  monthly: 28  // Every 4 weeks, preserving the weekday
 };
 
 function normaliseTime(value) {
@@ -22,11 +22,7 @@ function normaliseTime(value) {
 
 function addInterval(date, interval) {
   const next = new Date(date);
-  if (interval === 'monthly') {
-    next.setUTCMonth(next.getUTCMonth() + 1);
-  } else {
-    next.setUTCDate(next.getUTCDate() + INTERVAL_DAYS[interval]);
-  }
+  next.setUTCDate(next.getUTCDate() + INTERVAL_DAYS[interval]);
   return next;
 }
 const MAX_ADVANCE_DAYS = 28; // Customer bookings: max 4 weeks ahead

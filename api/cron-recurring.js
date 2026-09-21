@@ -10,7 +10,7 @@ const INTERVAL_DAYS = {
   weekly: 7,
   fortnightly: 14,
   '3weekly': 21,
-  monthly: 30
+  monthly: 28
 };
 
 const PREBOOK_AHEAD_DAYS = 62; // Keep recurring appointments populated roughly 2 months ahead
@@ -21,12 +21,20 @@ function normaliseTime(value) {
 
 function addInterval(date, interval) {
   const next = new Date(date);
-  if (interval === 'monthly') {
-    next.setUTCMonth(next.getUTCMonth() + 1);
-  } else {
-    next.setUTCDate(next.getUTCDate() + INTERVAL_DAYS[interval]);
-  }
+  next.setUTCDate(next.getUTCDate() + INTERVAL_DAYS[interval]);
   return next;
+}
+
+function firstOccurrenceCursor(series) {
+  const days = INTERVAL_DAYS[series.interval];
+  const cursor = new Date(series.created_at || Date.now());
+  cursor.setUTCHours(12, 0, 0, 0);
+  while (cursor.getUTCDay() !== series.preferred_day_of_week) {
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  const [hour, minute] = normaliseTime(series.preferred_time).split(':').map(Number);
+  cursor.setUTCHours(hour, minute, 0, 0);
+  return new Date(cursor.getTime() - days * 86400000);
 }
 
 
@@ -109,7 +117,7 @@ async function findSlot(series, targetDate, durationMins) {
 
   // ±30/60 min with preferred staff
   if (preferred_staff_id) {
-    for (const offset of [-30, 30, -60, 60]) {
+    for (const offset of [-30, 30, -60, 60, -90, 90, -120, 120]) {
       const tMins = preferredMins + offset;
       if (tMins < 0 || tMins > 1440) continue;
       const tStr = `${String(Math.floor(tMins / 60)).padStart(2, '0')}:${String(tMins % 60).padStart(2, '0')}`;
@@ -120,7 +128,7 @@ async function findSlot(series, targetDate, durationMins) {
   // ±30/60 min with any staff
   for (const s of activeStaff || []) {
     if (s.id === preferred_staff_id) continue;
-    for (const offset of [-30, 30, -60, 60]) {
+    for (const offset of [-30, 30, -60, 60, -90, 90, -120, 120]) {
       const tMins = preferredMins + offset;
       if (tMins < 0 || tMins > 1440) continue;
       const tStr = `${String(Math.floor(tMins / 60)).padStart(2, '0')}:${String(tMins % 60).padStart(2, '0')}`;
@@ -176,7 +184,7 @@ export default async function handler(req, res) {
         .limit(1)
         .maybeSingle();
 
-      let cursor = latest ? new Date(latest.start_datetime) : new Date(series.created_at);
+      let cursor = latest ? new Date(latest.start_datetime) : firstOccurrenceCursor(series);
       let generated = 0;
 
       // Advance to next occurrence after today (so we don't re-create past bookings)
@@ -185,7 +193,7 @@ export default async function handler(req, res) {
         cursor = addInterval(cursor, series.interval);
       }
 
-      // Fill out to 6 weeks ahead
+      // Fill out to roughly 2 months ahead
       while (cursor <= horizon) {
         const dateStr = cursor.toISOString().split('T')[0];
 

@@ -10,7 +10,7 @@ const INTERVAL_DAYS = {
   weekly: 7,
   fortnightly: 14,
   '3weekly': 21,
-  monthly: 30
+  monthly: 28
 };
 const PREBOOK_AHEAD_DAYS = 62;
 
@@ -20,12 +20,20 @@ function normaliseTime(value) {
 
 function addInterval(date, interval) {
   const next = new Date(date);
-  if (interval === 'monthly') {
-    next.setUTCMonth(next.getUTCMonth() + 1);
-  } else {
-    next.setUTCDate(next.getUTCDate() + INTERVAL_DAYS[interval]);
-  }
+  next.setUTCDate(next.getUTCDate() + INTERVAL_DAYS[interval]);
   return next;
+}
+
+function firstOccurrenceCursor(series) {
+  const days = INTERVAL_DAYS[series.interval];
+  const cursor = new Date(series.created_at || Date.now());
+  cursor.setUTCHours(12, 0, 0, 0);
+  while (cursor.getUTCDay() !== series.preferred_day_of_week) {
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  const [hour, minute] = normaliseTime(series.preferred_time).split(':').map(Number);
+  cursor.setUTCHours(hour, minute, 0, 0);
+  return new Date(cursor.getTime() - days * 86400000);
 }
 
 const VPS_EMAIL_URL = 'http://13.49.47.171/api/resetmcr/booking-email';
@@ -201,14 +209,9 @@ export default async function handler(req, res) {
         .neq('status', 'cancelled')
         .order('start_datetime', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (!latest) {
-        results.push({ series_id: series.id, status: 'no_last_booking' });
-        continue;
-      }
-
-      let cursor = new Date(latest.start_datetime);
+      let cursor = latest ? new Date(latest.start_datetime) : firstOccurrenceCursor(series);
       const horizon = new Date(Date.now() + PREBOOK_AHEAD_DAYS * 86400000);
       let created = 0;
       let failed = 0;
